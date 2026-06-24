@@ -1260,3 +1260,63 @@ init();
 </script>
 </body>
 </html>
+</body>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
+<script>
+// Firebase config ของคุณ
+const firebaseConfig = {
+  apiKey: "AIzaSyBLoCz0YgW_JB0Gg5rGOVslolxecHJmeGc",
+  authDomain: "gusswhat-newkid.firebaseapp.com",
+  projectId: "gusswhat-newkid",
+  storageBucket: "gusswhat-newkid.firebasestorage.app",
+  messagingSenderId: "346657179865",
+  appId: "1:346657179865:web:ece9884491eb2260da16c8"
+};
+
+// เริ่ม Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+</script>
+</body>
+<script>
+const roomId = "room1";
+
+// เข้าห้อง
+function joinGame(name) {
+  db.ref("rooms/" + roomId + "/players/" + name).set({
+    name: name,
+    time: Date.now()
+  });
+
+  // ถ้าออก → ลบออกจากห้อง
+  db.ref("rooms/" + roomId + "/players/" + name).onDisconnect().remove();
+}
+
+// อัปเดตรายชื่อผู้เล่น real-time
+db.ref("rooms/" + roomId + "/players").on("value", (snap) => {
+  const data = snap.val() || {};
+  const list = Object.keys(data)
+    .map(name => `<li>${name}</li>`)
+    .join("");
+
+  document.getElementById("playerList").innerHTML = list;
+});
+</script>
+</body>
+<h2>Lobby</h2>
+
+<input id="name" placeholder="ใส่ชื่อ">
+<button onclick="join()">Join</button>
+
+<ul id="playerList"></ul>
+
+<script>
+function join() {
+  const name = document.getElementById("name").value;
+  joinGame(name);
+}
+</script>
+</body>
