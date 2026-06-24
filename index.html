@@ -122,6 +122,8 @@ h1,h2,h3{margin:0;font-weight:600}
 .scorecol{flex:1.25}
 @media(max-width:920px){
   #lobby .wrap{grid-template-columns:1fr}
+  .lobby2{grid-template-columns:1fr}
+  .roomscene{min-height:280px}
   .char-grid{grid-template-columns:repeat(4,1fr)}
   .gmain{grid-template-columns:1fr;grid-template-rows:auto 1fr}
   .sidecol{flex-direction:row;max-height:128px}
@@ -198,6 +200,10 @@ h1,h2,h3{margin:0;font-weight:600}
 .frow .pts{font-family:var(--disp);font-size:20px;margin-left:auto;color:var(--accent)}
 .mutebtn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-size:16px;flex:0 0 auto}
 .target-tag{font-size:13px;color:var(--ink-soft);font-weight:600;white-space:nowrap}
+.cat-tag{font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:4px 10px;white-space:nowrap}
+.mutebtn.off{opacity:.4}
+.lobbymusic{position:absolute;top:52px;right:14px;width:36px;height:36px;border-radius:11px;border:1px solid var(--line);background:rgba(255,252,246,.92);font-size:17px;box-shadow:var(--shadow);z-index:3;cursor:pointer}
+.lobbymusic.off{opacity:.5}
 .dice-stage{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:10px}
 .die{width:64px;height:64px;border-radius:14px;background:#fff;border:2px solid var(--line);display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);padding:9px;box-shadow:var(--shadow)}
 .die span{display:flex;align-items:center;justify-content:center}
@@ -229,6 +235,46 @@ h1,h2,h3{margin:0;font-weight:600}
 .vopt .e{font-size:22px}.vopt .l{font-weight:600;font-size:13px}
 .vopt .cnt{position:absolute;top:-7px;right:-7px;min-width:20px;height:20px;border-radius:99px;background:var(--accent);color:#fff;font-family:var(--disp);font-size:13px;display:flex;align-items:center;justify-content:center;padding:0 5px}
 .crown{font-size:.92em}
+.lobby2{width:100%;max-width:1100px;display:grid;grid-template-columns:1.5fr 1fr;gap:18px;align-items:stretch}
+.roomscene{position:relative;border-radius:22px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);min-height:460px;background:#EADBC4}
+.roomscene .bg{position:absolute;inset:0}
+.roomscene .bg svg{width:100%;height:100%;display:block}
+.codebadge,.pcountbadge{position:absolute;top:14px;background:rgba(255,252,246,.92);border:1px solid var(--line);border-radius:12px;padding:7px 12px;font-family:var(--disp);font-size:15px;color:var(--ink);box-shadow:var(--shadow);z-index:3}
+.codebadge{left:14px}.codebadge b{color:var(--accent);letter-spacing:3px}
+.pcountbadge{right:14px;font-size:14px}
+.seats{position:absolute;inset:0;z-index:2}
+.seat{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;width:80px}
+.seat.kickable{cursor:pointer}
+.seat-fig{width:58px;height:88px;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 4px 6px rgba(74,63,53,.25))}
+.seat-fig svg{width:100%;height:100%}
+.seat.me .seat-fig{filter:drop-shadow(0 0 0 2px var(--accent)) drop-shadow(0 4px 6px rgba(74,63,53,.25))}
+.seat-badge{position:absolute;top:-2px;right:8px}
+.seat-name{margin-top:4px;font-size:12px;font-weight:700;background:rgba(255,252,246,.95);border-radius:8px;padding:1px 7px;max-width:94px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:var(--shadow)}
+.seat-badge{position:absolute;top:-4px;right:-3px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;border:2px solid #fff;z-index:3}
+.seat-badge.ready{background:var(--good);color:#fff}
+.seat-badge.wait{background:#CBBBA0;color:#fff}
+.seat .htag{position:absolute;top:-9px;left:-6px;font-size:10px;background:var(--accent);color:#fff;border-radius:6px;padding:0 4px;font-weight:800;z-index:3}
+.sidecard{padding:20px;max-height:calc(100vh - 56px);overflow:auto}
+.ready-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+.vote-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.vcard{border:2px solid var(--line);border-radius:18px;padding:18px 10px;background:var(--surface-2);text-align:center;position:relative;transition:.12s}
+.vcard:hover{border-color:var(--accent);transform:translateY(-2px)}
+.vcard.mine{border-color:var(--accent);background:var(--accent-soft)}
+.vcard .ve{font-size:36px}
+.vcard .vl{font-family:var(--disp);font-size:20px;margin-top:2px}
+.vcard .cnt{position:absolute;top:-9px;right:-9px;min-width:24px;height:24px;border-radius:99px;background:var(--accent);color:#fff;font-family:var(--disp);font-size:15px;display:flex;align-items:center;justify-content:center;padding:0 6px}
+.seat{transition:left .16s ease, top .16s ease}
+.movehint{position:absolute;left:50%;bottom:58px;transform:translateX(-50%);font-size:12px;font-weight:600;color:var(--ink-soft);background:rgba(255,252,246,.9);border:1px solid var(--line);padding:3px 12px;border-radius:9px;z-index:4;box-shadow:var(--shadow)}
+.emote-bar{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:4px;background:rgba(255,252,246,.94);border:1px solid var(--line);border-radius:14px;padding:5px 7px;box-shadow:var(--shadow);z-index:4;flex-wrap:wrap;max-width:92%;justify-content:center}
+.emote-bar button{width:34px;height:34px;border-radius:9px;border:none;background:transparent;cursor:pointer;padding:2px;transition:.1s}
+.emote-bar button svg{width:100%;height:100%;display:block}
+.emote-bar button:hover{background:var(--accent-soft);transform:scale(1.15)}
+.emo-bubble{position:absolute;left:50%;top:-30px;transform:translateX(-50%);width:44px;height:44px;z-index:7;pointer-events:none;background:#fff;border-radius:50%;box-shadow:0 3px 8px rgba(74,63,53,.28);border:2px solid #fff;display:flex;align-items:center;justify-content:center}
+.emo-bubble::after{content:"";position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #fff}
+.emo-bubble svg{width:90%;height:90%}
+.emo-bubble.pop{animation:emopop .16s ease-out}
+@keyframes emopop{0%{transform:translateX(-50%) scale(.4)}60%{transform:translateX(-50%) scale(1.18)}100%{transform:translateX(-50%) scale(1)}}
+@keyframes floatup{0%{opacity:0;transform:translate(-50%,6px) scale(.5)}25%{opacity:1;transform:translate(-50%,-14px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-66px) scale(1)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.05s!important}}
 </style>
 </head>
@@ -247,7 +293,7 @@ h1,h2,h3{margin:0;font-weight:600}
         <div id="homeAva" class="pava preview-ava"></div>
         <input id="nameInput" class="field" maxlength="14" placeholder="Type a nickname...">
       </div>
-      <p class="label" style="margin-top:18px">Pick your fox</p>
+      <p class="label" style="margin-top:18px">Pick your animal</p>
       <div id="charGrid" class="char-grid"></div>
       <div class="home-actions">
         <button id="btnCreate" class="btn primary">Create room</button>
@@ -260,44 +306,30 @@ h1,h2,h3{margin:0;font-weight:600}
 
 <!-- ============ LOBBY ============ -->
 <section id="lobby" class="screen">
-  <div class="wrap">
-    <div class="card panel">
-      <h2 class="disp"><span id="lobbyHostName">Your</span> room</h2>
-      <p class="muted">Share the link or room code with friends</p>
-      <div class="codepill" id="roomCode">----</div>
-      <p class="label" style="margin-top:16px">Invite link</p>
-      <div class="room-link">
-        <input id="shareLink" class="field" readonly>
-        <button id="copyLink" class="btn sm">Copy</button>
-      </div>
-      <p class="label" style="margin-top:16px">Room password (optional)</p>
-      <div class="room-link">
-        <input id="roomPass" class="field" placeholder="Set a password...">
-        <button id="lockBtn" class="btn sm">🔓</button>
-      </div>
-
-      <p class="label" style="margin-top:20px">Pick a category</p>
-      <div class="cats" id="catPick"></div>
-
-      <div class="opt-row">
-        <div class="label" style="margin:0">Time per round</div>
-        <div class="stepper"><button data-step="time" data-d="-1">−</button><b id="timeVal">60</b><button data-step="time" data-d="1">+</button></div>
-      </div>
-      <div class="opt-row" style="margin-top:8px">
-        <div class="label" style="margin:0">Bots (demo)</div>
-        <div class="stepper"><button data-step="bots" data-d="-1">−</button><b id="botVal">3</b><button data-step="bots" data-d="1">+</button></div>
-      </div>
-      <div class="opt-row" style="margin-top:8px">
-        <div class="label" style="margin:0">Win at score</div>
-        <div class="stepper"><button data-step="target" data-d="-1">−</button><b id="targetValL">1000</b><button data-step="target" data-d="1">+</button></div>
-      </div>
+  <div class="lobby2">
+    <div class="roomscene" id="roomScene">
+      <div class="bg" id="roomBg"></div>
+      <div class="codebadge">Room <b id="roomCode">----</b></div>
+      <div class="pcountbadge"><span id="pcount">1</span>/20 players</div>
+      <button id="bgmBtnLobby" class="lobbymusic bgm-toggle off" title="Background music on / off">🎵</button>
+      <div class="seats" id="seats"></div>
+      <div class="movehint"><b>WASD</b> / <b>ไฟหก</b> / arrows — walk around</div>
+      <div class="emote-bar" id="emoteBar"></div>
     </div>
-
-    <div class="card panel">
-      <h2 class="disp">Players (<span id="pcount">1</span>)</h2>
-      <p class="muted">Tap a player to start a kick vote</p>
-      <div class="players" id="playerList"></div>
-      <button id="startGame" class="btn primary" style="width:100%;margin-top:20px;font-size:18px;padding:15px">Start game 🎨</button>
+    <div class="card sidecard">
+      <h2 class="disp" id="lobbyTitle">Lobby</h2>
+      <p class="muted">Cozy waiting room — everyone joins as their animal</p>
+      <p class="label" style="margin-top:14px">Invite link</p>
+      <div class="room-link"><input id="shareLink" class="field" readonly><button id="copyLink" class="btn sm">Copy</button></div>
+      <p class="label" style="margin-top:12px">Password (optional)</p>
+      <div class="room-link"><input id="roomPass" class="field" placeholder="Set a password..."><button id="lockBtn" class="btn sm">🔓</button></div>
+      <p class="label" style="margin-top:14px">Default category</p>
+      <div class="cats" id="catPick"></div>
+      <div class="opt-row"><div class="label" style="margin:0">Time per round</div><div class="stepper"><button data-step="time" data-d="-1">−</button><b id="timeVal">60</b><button data-step="time" data-d="1">+</button></div></div>
+      <div class="opt-row" style="margin-top:8px"><div class="label" style="margin:0">Players (demo)</div><div class="stepper"><button data-step="bots" data-d="-1">−</button><b id="botVal">3</b><button data-step="bots" data-d="1">+</button></div></div>
+      <div class="opt-row" style="margin-top:8px"><div class="label" style="margin:0">Total rounds (10–40)</div><div class="stepper"><button data-step="rounds" data-d="-1">−</button><b id="roundsValL">20</b><button data-step="rounds" data-d="1">+</button></div></div>
+      <div class="ready-row"><span class="muted"><b id="readyCount">0</b>/<span id="readyTot">1</span> ready</span><button id="readyBtn" class="btn sm">I'm ready ✓</button></div>
+      <button id="startGame" class="btn primary" style="width:100%;margin-top:12px;font-size:18px;padding:15px">Start game 🎨</button>
       <button id="leaveLobby" class="btn ghost" style="width:100%;margin-top:8px">Leave room</button>
     </div>
   </div>
@@ -308,8 +340,9 @@ h1,h2,h3{margin:0;font-weight:600}
   <div class="gwrap">
     <div class="topbar">
       <div class="bar-logo">Guss<span class="what">What</span><span class="bang">!</span></div>
-      <div class="round-tag">Round <b id="roundNo">1</b></div>
-      <div class="target-tag">🎯 <span id="targetVal">1000</span></div>
+      <div class="round-tag">Round <b id="roundNo">1</b>/<b id="roundTot">20</b></div>
+      <div class="cat-tag" id="catTag">🐾 สัตว์</div>
+      <div class="target-tag">👑 <span id="leaderName">—</span></div>
       <div class="word-area">
         <div class="word-hint" id="wordHint">_ _ _</div>
         <div class="word-sub" id="wordSub">Waiting to start...</div>
@@ -326,7 +359,8 @@ h1,h2,h3{margin:0;font-weight:600}
         </svg>
         <span id="timeLeft">60</span>
       </div>
-      <button id="muteBtn" class="mutebtn" title="Sound on / off">🔊</button>
+      <button id="muteBtn" class="mutebtn" title="Sound effects on / off">🔊</button>
+      <button id="bgmBtn" class="mutebtn off bgm-toggle" title="Background music on / off">🎵</button>
       <button id="exitBtn" class="mutebtn" title="Exit to lobby">🚪</button>
     </div>
 
@@ -528,10 +562,21 @@ function animalHead(c){
   return `<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.key}">${s}</svg>`;
 }
 function charOf(p){return CHARACTERS[p.charId]||CHARACTERS[0];}
+function animalFigure(c){
+  const head=animalHead(c).replace(/^<svg[^>]*>/,"").replace(/<\/svg>$/,"");const O=c.outline;
+  return `<svg viewBox="0 0 100 150" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.key}">
+    <ellipse cx="40" cy="143" rx="10" ry="6" fill="${c.dark}"/><ellipse cx="60" cy="143" rx="10" ry="6" fill="${c.dark}"/>
+    <ellipse cx="22" cy="106" rx="8" ry="14" fill="${c.head}" stroke="${O}" stroke-width="2.4" transform="rotate(18 22 106)"/>
+    <ellipse cx="78" cy="106" rx="8" ry="14" fill="${c.head}" stroke="${O}" stroke-width="2.4" transform="rotate(-18 78 106)"/>
+    <path d="M24 90 Q24 54 50 54 Q76 54 76 90 L78 124 Q78 144 50 144 Q22 144 22 124 Z" fill="${c.head}" stroke="${O}" stroke-width="2.6"/>
+    <ellipse cx="50" cy="116" rx="15" ry="18" fill="${c.belly}"/>
+    <g transform="translate(8,0) scale(0.84)">${head}</g>
+  </svg>`;
+}
 function avaHTML(p,extra){const c=charOf(p);return `<div class="pava ${extra||''}" style="background:${c.ring}">${animalHead(c)}</div>`;}
 
 /* =================== TIMING / TARGET =================== */
-const RESULT_WAIT=8, NEWTURN_WAIT=10, PICK_WAIT=10, VOTE_WAIT=15;   // seconds between rounds
+const RESULT_WAIT=8, NEWTURN_WAIT=10, PICK_WAIT=10, VOTE_WAIT=8;   // seconds between rounds
 
 /* =================== SOUND SYSTEM (synth, no files) =================== */
 let _actx=null, _muted=false;
@@ -548,6 +593,31 @@ function sndPenalty(){_tone(150,.22,"sawtooth",.18);_tone(120,.26,"sawtooth",.16
 function sndTurn(){_tone(523,.1,"sine",.16);_tone(784,.12,"sine",.16,.08);}
 function sndTick(){_tone(880,.05,"sine",.1);}
 function sndUrgent(level){const base=level>=2?740:480;_tone(base,.08,"square",.16);if(level>=2)_tone(base*1.5,.09,"square",.13,.12);}
+
+/* ===== BACKGROUND MUSIC (cozy procedural loop, toggle) ===== */
+let bgmOn=false, bgmStep=0, bgmTimer=null;
+// gentle I–V–vi–IV in C, each chord = 4-note arpeggio
+const BGM_CHORDS=[[523,659,784,1047],[392,494,587,784],[440,523,659,880],[349,440,523,698]];
+const BGM_BASS=[131,98,110,87];
+function bgmTone(freq,dur,vol,type){const a=_audio();if(!a||!bgmOn)return;const t=a.currentTime,o=a.createOscillator(),g=a.createGain();
+  o.type=type||"sine";o.frequency.value=freq;o.connect(g);g.connect(a.destination);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.09);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.start(t);o.stop(t+dur+.05);}
+function bgmTick(){
+  if(!bgmOn)return;
+  const ci=Math.floor(bgmStep/4)%BGM_CHORDS.length, ni=bgmStep%4;
+  bgmTone(BGM_CHORDS[ci][ni], .7, .045, "sine");          // soft arpeggio
+  if(ni===0){bgmTone(BGM_BASS[ci], 1.9, .04, "triangle"); // gentle bass
+             bgmTone(BGM_CHORDS[ci][2], 1.7, .02, "sine");}// pad
+  bgmStep++;
+}
+function toggleBgm(){
+  bgmOn=!bgmOn;
+  if(bgmOn){const a=_audio();if(a&&a.state==="suspended")a.resume();bgmStep=0;clearInterval(bgmTimer);bgmTimer=setInterval(bgmTick,440);bgmTick();}
+  else{clearInterval(bgmTimer);}
+  syncBgmBtns();
+}
+function syncBgmBtns(){$$(".bgm-toggle").forEach(b=>b.classList.toggle("off",!bgmOn));}
 document.addEventListener("pointerdown",()=>{const a=_audio();if(a&&a.state==="suspended")a.resume();},{once:false});
 
 /* =================== TEXT HELPERS =================== */
@@ -562,10 +632,10 @@ function isClose(guess,word){const g=norm(guess),w=norm(word);if(!g||g===w)retur
 let S={
   me:{id:"me",name:"",charId:0},
   room:{code:"",pass:""}, players:[],
-  cat:"animals", roundTime:60, botCount:3, target:1000,
-  roundNo:0, order:[], turnPtr:-1,
+  cat:"animals", roundTime:60, botCount:3, target:1000, maxRounds:20, totalRounds:0, gameOver:false,
+  roundNo:0, order:[], turnPtr:-1, myPos:null,
   word:"", choices:[], revealMask:[], drawerId:null,
-  timeLeft:0, tickId:null, botDrawId:null, phaseTimer:null,
+  timeLeft:0, tickId:null, botDrawId:null, phaseTimer:null, lobbyTimer:null,
   guessedThisRound:new Set(), guessAt:{}, spam:{}, roundActive:false, bscale:1
 };
 let ctx,board;
@@ -598,31 +668,129 @@ $("#btnCreate").onclick=()=>{ensureName();createRoom();};
 $("#btnJoin").onclick=()=>{ensureName();askJoin();};
 
 /* =================== LOBBY =================== */
+const LOBBY_SLOTS=[[22,40],[35,38],[48,38],[61,38],[74,40],[15,57],[29,58],[43,58],[57,58],[71,58],[85,57],[24,75],[38,76],[52,76],[66,76],[80,75],[32,90],[46,91],[60,91],[74,90]];
+function lobbyRoomSVG(){return `<svg viewBox="0 0 1000 620" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+<defs>
+ <linearGradient id="lwall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3E8D6"/><stop offset="1" stop-color="#EADBC4"/></linearGradient>
+ <linearGradient id="lsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#BFE0F2"/><stop offset="1" stop-color="#E7F3DA"/></linearGradient>
+ <linearGradient id="lfloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C9A074"/><stop offset="1" stop-color="#B5895C"/></linearGradient>
+ <radialGradient id="lamb" cx="0.28" cy="0.2" r="0.7"><stop offset="0" stop-color="#FFF3D6" stop-opacity=".75"/><stop offset="1" stop-color="#FFF3D6" stop-opacity="0"/></radialGradient>
+ <radialGradient id="llamp" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#FFE7A6" stop-opacity=".7"/><stop offset="1" stop-color="#FFE7A6" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="1000" height="620" fill="url(#lwall)"/><rect y="360" width="1000" height="260" fill="url(#lfloor)"/>
+<g stroke="#A87C50" stroke-width="2" opacity=".5"><line x1="0" y1="420" x2="1000" y2="420"/><line x1="0" y1="500" x2="1000" y2="500"/><line x1="0" y1="580" x2="1000" y2="580"/><line x1="160" y1="360" x2="120" y2="620"/><line x1="380" y1="360" x2="360" y2="620"/><line x1="600" y1="360" x2="610" y2="620"/><line x1="820" y1="360" x2="860" y2="620"/></g>
+<g><rect x="88" y="62" width="286" height="272" rx="14" fill="#EDE1CD" stroke="#C9B79A" stroke-width="8"/><rect x="104" y="78" width="254" height="240" rx="8" fill="url(#lsky)"/><circle cx="300" cy="140" r="34" fill="#FFE08A"/><g fill="#FFFFFF" opacity=".85"><ellipse cx="160" cy="180" rx="34" ry="16"/><ellipse cx="195" cy="172" rx="26" ry="14"/><ellipse cx="220" cy="250" rx="30" ry="14"/></g><rect x="226" y="78" width="10" height="240" fill="#EDE1CD"/><rect x="104" y="186" width="254" height="10" fill="#EDE1CD"/></g>
+<polygon points="120,330 360,330 470,560 60,560" fill="#FFF2C9" opacity=".28"/><rect width="1000" height="620" fill="url(#lamb)"/>
+<g><rect x="690" y="120" width="230" height="12" rx="4" fill="#C49A6C"/><rect x="690" y="196" width="230" height="12" rx="4" fill="#C49A6C"/><g><rect x="704" y="86" width="14" height="34" rx="2" fill="#D9685F"/><rect x="722" y="80" width="14" height="40" rx="2" fill="#7FA88A"/><rect x="740" y="90" width="14" height="30" rx="2" fill="#6FA0C9"/><rect x="758" y="84" width="14" height="36" rx="2" fill="#E8B84B"/></g><g transform="translate(860,86)"><rect x="-12" y="20" width="24" height="14" rx="3" fill="#C9763B"/><path d="M0 22 Q-14 6 -8 -6 M0 22 Q14 4 10 -8 M0 22 Q0 0 0 -12" stroke="#5E9E5E" stroke-width="4" fill="none" stroke-linecap="round"/></g><rect x="700" y="150" width="48" height="34" rx="3" fill="#EAD9BE" stroke="#C49A6C" stroke-width="3"/><circle cx="724" cy="167" r="9" fill="#E8A23D"/></g>
+<ellipse cx="500" cy="500" rx="330" ry="92" fill="#E7D3B6"/><ellipse cx="500" cy="500" rx="300" ry="78" fill="none" stroke="#D7B98E" stroke-width="6" stroke-dasharray="14 12"/>
+<g><rect x="300" y="300" width="400" height="92" rx="26" fill="#C98B5E"/><rect x="296" y="334" width="408" height="78" rx="24" fill="#E0A06A"/><rect x="284" y="312" width="56" height="104" rx="22" fill="#D69458"/><rect x="660" y="312" width="56" height="104" rx="22" fill="#D69458"/><rect x="330" y="316" width="110" height="62" rx="16" fill="#EFB985"/><rect x="446" y="316" width="110" height="62" rx="16" fill="#EFB985"/><rect x="562" y="316" width="100" height="62" rx="16" fill="#EFB985"/><rect x="352" y="330" width="56" height="44" rx="12" fill="#D9685F"/><rect x="580" y="330" width="56" height="44" rx="12" fill="#7FA88A"/></g>
+<g><ellipse cx="500" cy="486" rx="120" ry="34" fill="#A9764E"/><ellipse cx="500" cy="476" rx="120" ry="34" fill="#C49A6C"/><rect x="470" y="452" width="14" height="10" rx="3" fill="#fff" opacity=".8"/><rect x="512" y="456" width="16" height="8" rx="3" fill="#D9685F" opacity=".85"/><g transform="translate(500,452)"><rect x="-9" y="-2" width="18" height="12" rx="3" fill="#C9763B"/><path d="M0 0 Q-12 -14 -7 -24 M0 0 Q12 -16 8 -26 M0 0 Q0 -18 0 -28" stroke="#5E9E5E" stroke-width="4" fill="none" stroke-linecap="round"/></g></g>
+<g><circle cx="918" cy="300" r="120" fill="url(#llamp)"/><rect x="912" y="300" width="8" height="210" fill="#9C8266"/><path d="M886 300 L946 300 L930 256 L902 256 Z" fill="#F2D58A" stroke="#D9B45E" stroke-width="3"/><ellipse cx="916" cy="512" rx="34" ry="10" fill="#8A6E52"/></g>
+<g transform="translate(96,470)"><path d="M0 60 L-28 60 L-22 18 L22 18 L28 60 Z" fill="#C9763B"/><g stroke-linecap="round" fill="none" stroke-width="9"><path d="M0 24 Q-40 -10 -30 -64" stroke="#5E9E5E"/><path d="M0 24 Q34 -16 26 -70" stroke="#6FB36E"/><path d="M0 24 Q-8 -30 2 -86" stroke="#4E8E4E"/><path d="M0 24 Q18 -8 50 -34" stroke="#6FB36E"/><path d="M0 24 Q-22 0 -52 -20" stroke="#5E9E5E"/></g></g>
+</svg>`;}
+function pickChar(used){const free=CHARACTERS.map((_,j)=>j).filter(j=>!used.has(j));const c=free.length?rand(free):Math.floor(Math.random()*CHARACTERS.length);used.add(c);return c;}
 function createRoom(){
   S.room.code=code4();S.room.pass="";S.me.id="me";
-  S.players=[{...S.me,score:0,isHost:true,isBot:false}];
+  S.players=[{...S.me,score:0,isHost:true,isBot:false,ready:true}];
   enterLobby();
 }
 function enterLobby(){
-  $("#lobbyHostName").textContent=esc(S.me.name)+"'s";
+  $("#roomBg").innerHTML=lobbyRoomSVG();
   $("#roomCode").textContent=S.room.code;
   $("#shareLink").value=location.origin+location.pathname+"?room="+S.room.code;
-  buildCats();selectCat(S.cat);renderLobby();show("lobby");
+  S.myPos=null;buildCats();selectCat(S.cat);lobbyAddBots();buildEmotes();renderLobby();startLobbyLife();show("lobby");
+}
+const REKEYS=["happy","laugh","love","blush","wink","sad","angry","cry","shock","dizzy","cool","question"];
+function faceSVG(t){
+  const ink="#5A5048",ln="#B7A78C",bg="#FBF6EC";
+  const base=`<circle cx="50" cy="50" r="37" fill="${bg}" stroke="${ln}" stroke-width="3"/>`;
+  const blush=`<ellipse cx="31" cy="58" rx="6.5" ry="4.5" fill="#F1B0A6" opacity=".65"/><ellipse cx="69" cy="58" rx="6.5" ry="4.5" fill="#F1B0A6" opacity=".65"/>`;
+  let f="";
+  switch(t){
+   case "happy": f=base+`<path d="M32 46 Q38 39 44 46" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M56 46 Q62 39 68 46" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M40 60 Q50 70 60 60" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/>`+blush; break;
+   case "laugh": f=base+`<path d="M31 44 Q38 38 45 44" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M55 44 Q62 38 69 44" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M37 56 Q50 74 63 56 Q50 62 37 56 Z" fill="${ink}"/>`+blush; break;
+   case "love": f=base+`<path d="M38 42 q-5 -6 -10 -1 q-4 5 10 11 q14 -6 10 -11 q-5 -5 -10 1 Z" fill="#E06A78"/><path d="M62 42 q-5 -6 -10 -1 q-4 5 10 11 q14 -6 10 -11 q-5 -5 -10 1 Z" fill="#E06A78"/><path d="M40 61 Q50 69 60 61" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`+blush; break;
+   case "blush": f=base+`<circle cx="38" cy="46" r="3.6" fill="${ink}"/><circle cx="62" cy="46" r="3.6" fill="${ink}"/><path d="M44 60 Q50 64 56 60" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/><ellipse cx="29" cy="56" rx="8" ry="5.5" fill="#F0A0A0" opacity=".75"/><ellipse cx="71" cy="56" rx="8" ry="5.5" fill="#F0A0A0" opacity=".75"/>`; break;
+   case "wink": f=base+`<path d="M33 47 Q38 42 43 47" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><circle cx="62" cy="46" r="3.6" fill="${ink}"/><path d="M40 60 Q50 67 60 59" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`+blush; break;
+   case "sad": f=base+`<path d="M32 44 Q38 50 44 44" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/><path d="M56 44 Q62 50 68 44" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/><path d="M40 64 Q50 56 60 64" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`; break;
+   case "angry": f=base+`<path d="M32 40 L46 46" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M68 40 L54 46" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><circle cx="40" cy="50" r="3.2" fill="${ink}"/><circle cx="60" cy="50" r="3.2" fill="${ink}"/><path d="M41 66 Q50 60 59 66" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`; break;
+   case "cry": f=base+`<path d="M32 45 Q38 39 44 45" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/><path d="M56 45 Q62 39 68 45" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/><ellipse cx="50" cy="64" rx="7" ry="9" fill="${ink}"/><path d="M36 50 Q33 60 35 68 Q39 60 38 50 Z" fill="#7FB6E0"/><path d="M64 50 Q67 60 65 68 Q61 60 62 50 Z" fill="#7FB6E0"/>`; break;
+   case "shock": f=base+`<circle cx="38" cy="45" r="6.5" fill="#fff" stroke="${ink}" stroke-width="2.6"/><circle cx="62" cy="45" r="6.5" fill="#fff" stroke="${ink}" stroke-width="2.6"/><circle cx="38" cy="46" r="2.8" fill="${ink}"/><circle cx="62" cy="46" r="2.8" fill="${ink}"/><ellipse cx="50" cy="64" rx="5" ry="7" fill="${ink}"/>`; break;
+   case "dizzy": f=base+`<path d="M34 46 m-5 0 a5 5 0 1 1 8 -3" fill="none" stroke="${ink}" stroke-width="2.6"/><path d="M66 46 m-5 0 a5 5 0 1 1 8 -3" fill="none" stroke="${ink}" stroke-width="2.6"/><path d="M40 63 q5 -5 10 0 q5 5 10 0" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`; break;
+   case "cool": f=base+`<path d="M26 44 H46 V52 Q36 56 26 50 Z" fill="${ink}"/><path d="M54 44 H74 V50 Q64 56 54 52 Z" fill="${ink}"/><path d="M46 47 H54" stroke="${ink}" stroke-width="3"/><path d="M40 62 Q50 70 60 60" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`; break;
+   case "question": f=base+`<circle cx="38" cy="48" r="3.4" fill="${ink}"/><circle cx="62" cy="48" r="3.4" fill="${ink}"/><path d="M44 62 Q50 60 56 62" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/><text x="66" y="33" font-size="26" font-family="sans-serif" font-weight="bold" fill="#6FA0C9">?</text>`; break;
+  }
+  return `<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">${f}</svg>`;
+}
+function buildEmotes(){const bar=$("#emoteBar");if(!bar||bar.children.length)return;REKEYS.forEach(t=>{const b=document.createElement("button");b.innerHTML=faceSVG(t);b.title=t;b.onclick=()=>emote(S.me.id,t);bar.appendChild(b);});}
+function emote(id,t){
+  const seat=document.querySelector('#seats [data-pid="'+(window.CSS&&CSS.escape?CSS.escape(id):id)+'"]');
+  if(!seat)return;
+  let b=seat.querySelector(".emo-bubble");
+  if(!b){b=document.createElement("div");b.className="emo-bubble";seat.appendChild(b);}
+  b.innerHTML=faceSVG(t);
+  b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop");   // restart pop -> flicker on rapid taps
+  clearTimeout(b._t);b._t=setTimeout(()=>{if(b)b.remove();},5000);       // hold 5s
+}
+function startLobbyLife(){
+  clearInterval(S.lobbyTimer);
+  S.lobbyTimer=setInterval(()=>{
+    if(!$("#lobby").classList.contains("on"))return;
+    const bots=S.players.filter(p=>p.isBot);
+    if(bots.length&&Math.random()<.6)emote(rand(bots).id,rand(REKEYS));
+  },2600);
+}
+document.addEventListener("keydown",e=>{
+  if(!$("#lobby").classList.contains("on"))return;
+  const ae=document.activeElement;if(ae&&/INPUT|TEXTAREA/.test(ae.tagName))return;
+  let dx=0,dy=0;const k=e.key;
+  if(k==="ArrowLeft"||k==="a"||k==="A"||k==="ฟ")dx=-1;else if(k==="ArrowRight"||k==="d"||k==="D"||k==="ก")dx=1;
+  else if(k==="ArrowUp"||k==="w"||k==="W"||k==="ไ")dy=-1;else if(k==="ArrowDown"||k==="s"||k==="S"||k==="ห")dy=1;else return;
+  e.preventDefault();if(!S.myPos)return;
+  S.myPos=[Math.max(8,Math.min(92,S.myPos[0]+dx*3.4)),Math.max(30,Math.min(90,S.myPos[1]+dy*3.4))];
+  const el=$("#meSeat");if(el){el.style.left=S.myPos[0]+"%";el.style.top=S.myPos[1]+"%";}
+});
+function lobbyAddBots(){
+  S.players=S.players.filter(p=>!(p.isBot&&!p.isHost));
+  const used=new Set(S.players.map(p=>p.charId));
+  const names=[...BOT_NAMES].sort(()=>Math.random()-.5);
+  const cap=Math.min(20,S.players.length+S.botCount);let i=0;
+  while(S.players.length<cap){S.players.push({id:"bot"+i,name:names[i%names.length]||("Bot"+i),charId:pickChar(used),score:0,isBot:true,isHost:false,ready:true,skill:.4+Math.random()*.45});i++;}
 }
 function renderLobby(){
-  const list=$("#playerList");list.innerHTML="";
-  S.players.forEach(p=>{
-    const row=document.createElement("div");row.className="prow";
-    row.innerHTML=`${avaHTML(p)}<span class="pname">${esc(p.name)}${crown(p)}</span>
-      ${p.isHost?'<span class="badge">HOST</span>':''}${p.isBot?'<span class="badge bot">BOT</span>':''}`;
-    if(p.id!==S.me.id){const k=document.createElement("button");k.className="kick";k.textContent="Vote kick";k.onclick=()=>voteKick(p);row.appendChild(k);}
-    list.appendChild(row);
+  const seats=$("#seats");if(!seats)return;seats.innerHTML="";
+  S.players.slice(0,20).forEach((p,i)=>{
+    const isMe=p.id===S.me.id;
+    let pos;
+    if(isMe){if(!S.myPos)S.myPos=[...(LOBBY_SLOTS[i]||[50,50])];pos=S.myPos;}
+    else pos=LOBBY_SLOTS[i]||[50,50];
+    const el=document.createElement("div");
+    if(isMe)el.id="meSeat";
+    el.dataset.pid=p.id;
+    el.className="seat"+(isMe?" me":"")+(!isMe&&!p.isHost?" kickable":"");
+    el.style.left=pos[0]+"%";el.style.top=pos[1]+"%";
+    el.innerHTML=`<div class="seat-fig">${animalFigure(charOf(p))}</div>
+      <div class="seat-name">${esc(p.name)}${crown(p)}${pigHat(p)}</div>
+      ${p.isHost?'<span class="htag">HOST</span>':''}
+      <span class="seat-badge ${p.ready?'ready':'wait'}">${p.ready?'✓':'…'}</span>`;
+    if(!isMe&&!p.isHost)el.onclick=()=>voteKick(p);
+    seats.appendChild(el);
   });
   $("#pcount").textContent=S.players.length;
+  const ready=S.players.filter(p=>p.ready).length;
+  $("#readyCount").textContent=ready;$("#readyTot").textContent=S.players.length;
+  const meE=S.players.find(p=>p.id===S.me.id),host=S.players.find(p=>p.isHost);
+  $("#readyBtn").textContent=(meE&&meE.ready)?"Not ready":"I'm ready ✓";
+  $("#lobbyTitle").textContent=(meE&&meE.isHost)?"Your lobby":(host?host.name+"'s lobby":"Lobby");
+  const isHost=meE&&meE.isHost;
+  $("#startGame").style.display=isHost?"":"none";
+  $("#readyBtn").style.display=isHost?"none":"";
 }
-S.champWins={};
-function champIds(){const w=S.champWins||{};let mx=0;Object.keys(w).forEach(k=>{if(w[k]>mx)mx=w[k];});if(mx<=0)return new Set();return new Set(Object.keys(w).filter(k=>w[k]===mx));}
+S.champWins={};S.pigHats={};
+function maxIds(w){w=w||{};let mx=0;Object.keys(w).forEach(k=>{if(w[k]>mx)mx=w[k];});if(mx<=0)return new Set();return new Set(Object.keys(w).filter(k=>w[k]===mx));}
+function champIds(){return maxIds(S.champWins);}
 function crown(p){return champIds().has(p.id)?'<span class="crown"> 👑</span>':'';}
+function pigHat(p){return maxIds(S.pigHats).has(p.id)?'<span class="crown"> 🐷</span>':'';}
 function buildCats(){
   const grid=$("#catPick");if(grid.children.length)return;
   CATS.forEach(c=>{
@@ -641,9 +809,10 @@ $("#roomPass").addEventListener("input",e=>{S.room.pass=e.target.value.trim();$(
 $$('.stepper button').forEach(b=>b.onclick=()=>{
   const d=+b.dataset.d;
   if(b.dataset.step==="time"){S.roundTime=Math.max(30,Math.min(120,S.roundTime+d*10));$("#timeVal").textContent=S.roundTime;}
-  else if(b.dataset.step==="bots"){S.botCount=Math.max(0,Math.min(7,S.botCount+d));$("#botVal").textContent=S.botCount;}
-  else if(b.dataset.step==="target"){S.target=Math.max(500,Math.min(3000,S.target+d*250));$("#targetValL").textContent=S.target;}
+  else if(b.dataset.step==="bots"){S.botCount=Math.max(0,Math.min(19,S.botCount+d));$("#botVal").textContent=S.botCount;if($("#lobby").classList.contains("on")){lobbyAddBots();renderLobby();}}
+  else if(b.dataset.step==="rounds"){S.maxRounds=Math.max(10,Math.min(40,S.maxRounds+d*5));$("#roundsValL").textContent=S.maxRounds;}
 });
+$("#readyBtn").onclick=()=>{const meE=S.players.find(p=>p.id===S.me.id);if(meE){meE.ready=!meE.ready;renderLobby();}};
 $("#leaveLobby").onclick=()=>location.reload();
 
 function voteKick(p){
@@ -678,22 +847,37 @@ function voteKick(p){
 }
 
 /* =================== START GAME =================== */
-$("#startGame").onclick=()=>{
-  S.players=S.players.filter(p=>!p.isBot);
-  const names=[...BOT_NAMES].sort(()=>Math.random()-.5);
-  const usedChars=new Set(S.players.map(p=>p.charId));
-  for(let i=0;i<S.botCount;i++){
-    let cid;const free=CHARACTERS.map((_,j)=>j).filter(j=>!usedChars.has(j));
-    cid=free.length?rand(free):Math.floor(Math.random()*CHARACTERS.length);usedChars.add(cid);
-    S.players.push({id:"bot"+i,name:names[i]||("Bot"+i),charId:cid,score:0,isBot:true,isHost:false,skill:.4+Math.random()*.45});
-  }
+$("#startGame").onclick=()=>{ modeVotePre(); };
+function startMatch(){
+  clearInterval(S.lobbyTimer);
   S.players.forEach(p=>p.score=0);
-  S.roundNo=0;S.turnPtr=-1;
-  $("#targetVal").textContent=S.target;
+  S.roundNo=0;S.turnPtr=-1;S.gameOver=false;
+  S.totalRounds=S.maxRounds;
+  $("#roundTot").textContent=S.totalRounds;updateCatTag();
   $("#guessfeed").innerHTML="";$("#logList").innerHTML="";
   show("game");setupBoard();buildToolUI();renderScores();
   setTimeout(diceRollStart,350);
-};
+}
+/* pre-game MODE VOTE: large cards, real-time counts, tie=random, instant start when all voted */
+function modeVotePre(){
+  const keys=CATS.map(c=>c.key).sort(()=>Math.random()-.5).slice(0,4);
+  const votes={};keys.forEach(k=>votes[k]=0);
+  const voted=new Set();let myVote=null,t=VOTE_WAIT,done=false;
+  const N=S.players.length;
+  function cardHTML(){return keys.map(k=>{const c=CATS.find(x=>x.key===k);return `<button class="vcard${myVote===k?' mine':''}" data-cat="${k}"><div class="ve">${c.emoji}</div><div class="vl">${c.name}</div><div class="cnt">${votes[k]}</div></button>`;}).join("");}
+  function render(){
+    openModal(`<h2 class="disp">Vote the mode</h2><p class="muted">Most votes starts · tie = random</p>
+      <div class="vote-cards">${cardHTML()}</div>
+      <p class="muted" style="margin-top:14px">${voted.size}/${N} voted · starting in <b>${t}</b>s</p>`);
+    $$("#modal .vcard").forEach(b=>b.onclick=()=>castMe(b.dataset.cat));
+  }
+  function finish(){if(done)return;done=true;clearPhase();const mx=Math.max(...keys.map(k=>votes[k]));S.cat=rand(keys.filter(k=>votes[k]===mx));closeModal();toast("Mode: "+CAT_NAME[S.cat]);startMatch();}
+  function castMe(k){if(done)return;if(myVote)votes[myVote]--;myVote=k;votes[k]++;voted.add(S.me.id);render();if(voted.size>=N)finish();}
+  function castBot(id){if(done)return;votes[rand(keys)]++;voted.add(id);if($("#overlay").classList.contains("on"))render();if(voted.size>=N)finish();}
+  S.players.filter(p=>p.isBot).forEach(b=>setTimeout(()=>castBot(b.id),(0.6+Math.random()*(VOTE_WAIT-2))*1000));
+  render();sndTurn();clearPhase();
+  S.phaseTimer=setInterval(()=>{t--;if(t<=0)finish();else render();},1000);
+}
 
 /* roll dice -> highest starts; sets round-robin order */
 function diceRollStart(){
@@ -813,7 +997,7 @@ function nextTurn(){
   if(!found)return endGame();
   S.roundNo++;S.roundActive=false;
   S.choices=[...WORDS[S.cat]].sort(()=>Math.random()-.5).slice(0,3);
-  $("#roundNo").textContent=S.roundNo;
+  $("#roundNo").textContent=S.roundNo;updateCatTag();
   $("#wordHint").textContent="• • •";$("#wordSub").textContent="New turn";
   clearBoard();renderScores();setToolsLocked(true);resetHourglass();
   $("#guessInput").disabled=true;$("#guessInput").placeholder="New turn...";
@@ -931,6 +1115,9 @@ function registerCorrect(p){
   const frac=Math.max(0,S.timeLeft/S.roundTime);
   const pts=Math.round(50+250*frac);
   p.score+=pts;sndCorrect();
+  // drawer earns based on how FAST this guesser was (fast guess -> drawer earns more)
+  const drawer=S.players.find(x=>x.id===S.drawerId);
+  if(drawer){const dpts=Math.round(pts*0.5);drawer.score+=dpts;}
   chat(p.name,"guessed it! +"+pts,p,"correct");renderScores();
   const need=S.players.filter(x=>x.id!==S.drawerId).length;
   if(S.guessedThisRound.size>=need)endRound("Everyone guessed it!");
@@ -952,13 +1139,16 @@ function submitGuess(){
 $("#sendGuess").onclick=submitGuess;
 $("#guessInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitGuess();});
 $("#muteBtn").onclick=()=>{_muted=!_muted;$("#muteBtn").textContent=_muted?"🔇":"🔊";if(!_muted)sndTurn();};
+$("#bgmBtn").onclick=toggleBgm;
+$("#bgmBtnLobby").onclick=toggleBgm;
+function updateCatTag(){const c=CATS.find(x=>x.key===S.cat);if(c&&$("#catTag"))$("#catTag").textContent=`${c.emoji} ${c.name}`;}
 $("#exitBtn").onclick=exitGame;
 function exitGame(){
   openModal(`<h2 class="disp">Exit game?</h2><p class="muted">Return to the lobby — scores reset.</p>
     <div class="row"><button class="btn" id="exNo">Stay</button><button class="btn hot" id="exYes">Exit</button></div>`);
   $("#exNo").onclick=closeModal;
-  $("#exYes").onclick=()=>{closeModal();S.roundActive=false;clearInterval(S.tickId);clearInterval(S.botDrawId);clearPhase();$("#centerMsg").classList.remove("on");
-    S.players=S.players.filter(p=>!p.isBot);S.players.forEach(p=>p.score=0);buildCats();selectCat(S.cat);renderLobby();show("lobby");};
+  $("#exYes").onclick=()=>{closeModal();S.roundActive=false;S.gameOver=true;clearInterval(S.tickId);clearInterval(S.botDrawId);clearPhase();$("#centerMsg").classList.remove("on");
+    S.players=S.players.filter(p=>!p.isBot);S.players.forEach(p=>p.score=0);S.myPos=null;buildCats();selectCat(S.cat);lobbyAddBots();renderLobby();startLobbyLife();show("lobby");};
 }
 function chat(who,text,p,cls=""){
   const log=$("#guessfeed");const d=document.createElement("div");d.className="msg "+cls;
@@ -974,72 +1164,64 @@ function endRound(reason){
   if(!S.roundActive)return;S.roundActive=false;
   clearInterval(S.tickId);clearInterval(S.botDrawId);clearPhase();
   setToolsLocked(true);$("#guessInput").disabled=true;
-  const guessers=S.players.filter(x=>x.id!==S.drawerId);
-  const G=guessers.length,C=S.guessedThisRound.size;
-  const drawer=S.players.find(x=>x.id===S.drawerId);
-  let dpts=0;
-  if(drawer&&G>0){dpts=Math.round((C/G)*300)+(C===G?200:0);drawer.score+=dpts;}
   sndRoundEnd();renderScores();
-  sysMsg(`Answer: "${S.word}"`+(dpts?` · ${drawer.name} +${dpts} for the drawing`:""));
-  const leader=[...S.players].sort((a,b)=>b.score-a.score)[0];
-  if(leader&&leader.score>=S.target){
-    showCenter(`<div class="big">${esc(reason)}</div><div class="word-sub" style="margin-top:6px">The word was</div><div class="reveal">${esc(S.word)}</div>`,0);
-    clearPhase();S.phaseTimer=setTimeout(()=>endGame(leader),1800);return;
+  sysMsg(`Answer: "${S.word}"`);
+  if(S.roundNo>=S.totalRounds){
+    showCenter(`<div class="big">${esc(reason)}</div><div class="word-sub" style="margin-top:6px">The word was</div><div class="reveal">${esc(S.word)}</div><div class="word-sub" style="margin-top:8px">Final round!</div>`,0);
+    clearPhase();S.phaseTimer=setTimeout(()=>endGame(),1800);return;
   }
-  categoryVote(reason);
-}
-function categoryVote(reason){
+  let t=RESULT_WAIT;
+  showCenter(`<div class="big">${esc(reason)}</div><div class="word-sub" style="margin-top:6px">The word was</div><div class="reveal">${esc(S.word)}</div><div class="word-sub" style="margin-top:8px">Next turn in <b id="nwT">${t}</b>s</div>`,0);
   clearPhase();
-  const others=CATS.map(c=>c.key).filter(k=>k!==S.cat).sort(()=>Math.random()-.5).slice(0,3);
-  const keys=[S.cat,...others];
-  const votes={};keys.forEach(k=>votes[k]=0);
-  let myVote=null,curT=VOTE_WAIT;
-  const catObj=k=>CATS.find(c=>c.key===k);
-  function render(){
-    const opts=keys.map(k=>{const c=catObj(k);return `<button class="vopt${myVote===k?' mine':''}" data-cat="${k}"><div class="e">${c.emoji}</div><div class="l">${c.name}</div><div class="cnt">${votes[k]}</div></button>`;}).join("");
-    showCenter(`<div class="big">Answer: ${esc(S.word)}</div><div class="word-sub" style="margin:6px 0 2px">Vote next category · <b>${curT}</b>s</div><div class="vote-opts">${opts}</div>`,0);
-    $$("#centerMsg .vopt").forEach(b=>b.onclick=()=>{if(myVote)votes[myVote]--;myVote=b.dataset.cat;votes[myVote]++;render();});
-  }
-  S.players.filter(p=>p.isBot).forEach(()=>setTimeout(()=>{votes[rand(keys)]++;if($("#centerMsg").classList.contains("on"))render();},(1+Math.random()*(VOTE_WAIT-3))*1000));
-  render();
-  S.phaseTimer=setInterval(()=>{curT--;
-    if(curT<=0){clearPhase();const mx=Math.max(...keys.map(k=>votes[k]));const win=rand(keys.filter(k=>votes[k]===mx));
-      S.cat=win;sysMsg(`Next category: ${CAT_NAME[win]}`);$("#centerMsg").classList.remove("on");nextTurn();}
-    else render();
-  },1000);
+  S.phaseTimer=setInterval(()=>{t--;const el=$("#nwT");if(el)el.textContent=Math.max(0,t);if(t<=0){clearPhase();$("#centerMsg").classList.remove("on");nextTurn();}},1000);
 }
-function endGame(winner){
+function endGame(){
+  if(S.gameOver)return;S.gameOver=true;
   S.roundActive=false;clearInterval(S.tickId);clearInterval(S.botDrawId);clearPhase();
   $("#centerMsg").classList.remove("on");
   const ranked=[...S.players].sort((a,b)=>b.score-a.score);
-  const champ=winner||ranked[0];
-  S.champWins[champ.id]=(S.champWins[champ.id]||0)+1;
+  const maxS=ranked[0].score, minS=ranked[ranked.length-1].score;
+  const winners=ranked.filter(p=>p.score===maxS);
+  const losers=ranked.filter(p=>p.score===minS);
+  winners.forEach(p=>S.champWins[p.id]=(S.champWins[p.id]||0)+1);   // crown (ties stack)
+  losers.forEach(p=>S.pigHats[p.id]=(S.pigHats[p.id]||0)+1);        // pig hat (ties stack)
   sndWin();
   const pod=[ranked[1],ranked[0],ranked[2]],podClass=["p2","p1","p3"],rankNo=[2,1,3];
-  let podium="";pod.forEach((p,i)=>{if(!p)return;podium+=`<div class="pod ${podClass[i]}">${avaHTML(p)}<div class="nm">${esc(p.name)}${crown(p)}</div><div class="ptl">${p.score}</div><div class="bar">${rankNo[i]}</div></div>`;});
-  const list=ranked.map((p,i)=>`<div class="frow ${i===0?'win':''}"><div class="rk">${["🥇","🥈","🥉"][i]||('#'+(i+1))}</div>${avaHTML(p)}<span class="pname">${esc(p.name)}${crown(p)}</span><span class="pts">${p.score} · 🏆${S.champWins[p.id]||0}</span></div>`).join("");
-  const modes=CATS.map(c=>`<button class="mode" data-cat="${c.key}"><div class="e">${c.emoji}</div><div class="l">${c.name}</div></button>`).join("");
-  openModal(`<h2 class="disp">🏆 ${esc(champ.name)} wins!</h2><p class="muted">First to ${S.target} · ${CAT_NAME[S.cat]}</p>
+  let podium="";pod.forEach((p,i)=>{if(!p)return;podium+=`<div class="pod ${podClass[i]}">${avaHTML(p)}<div class="nm">${esc(p.name)}</div><div class="ptl">${p.score}</div><div class="bar">${rankNo[i]}</div></div>`;});
+  const list=ranked.map((p,i)=>{
+    const badge=(p.score===maxS?'👑':'')+(p.score===minS?'🐷':'');
+    return `<div class="frow ${p.score===maxS?'win':''}"><div class="rk">${badge||(["🥇","🥈","🥉"][i]||('#'+(i+1)))}</div>${avaHTML(p)}<span class="pname">${esc(p.name)}</span><span class="pts">${p.score} · 🏆${S.champWins[p.id]||0} 🐷${S.pigHats[p.id]||0}</span></div>`;
+  }).join("");
+  const title=winners.length>1?`${winners.length}-way tie!`:`👑 ${esc(winners[0].name)} wins!`;
+  openModal(`<h2 class="disp">${title}</h2><p class="muted">Most points after ${S.totalRounds} rounds · ${CAT_NAME[S.cat]}</p>
     <div class="podium">${podium}</div>
     <div class="final-list">${list}</div>
-    <p class="label" style="margin-top:8px">Play again — choose a mode</p>
-    <div class="mode-grid">${modes}</div>
-    <div class="row"><button class="btn" id="backLobby">Back to lobby</button></div>`);
-  $$("#modal .mode").forEach(b=>b.onclick=()=>{S.cat=b.dataset.cat;closeModal();$("#startGame").click();});
-  $("#backLobby").onclick=()=>{closeModal();S.players=S.players.filter(p=>!p.isBot);S.players.forEach(p=>p.score=0);buildCats();selectCat(S.cat);renderLobby();show("lobby");};
+    <p class="muted" style="margin-top:6px;font-size:12px">👑 crown = top score · 🐷 pig hat = last place (ties share)</p>
+    <div class="row"><button class="btn primary" id="againBtn" style="flex:1">Play again 🎲</button><button class="btn" id="backLobby" style="flex:1">Return to lobby</button></div>`);
+  $("#againBtn").onclick=()=>{closeModal();modeVotePre();};   // host plays on -> new mode vote
+  $("#backLobby").onclick=()=>returnToLobby();
+}
+function returnToLobby(){
+  S.roundActive=false;clearInterval(S.tickId);clearInterval(S.botDrawId);clearPhase();
+  $("#centerMsg").classList.remove("on");closeModal();
+  S.players.forEach(p=>{p.score=0;if(p.isBot)p.ready=true;});
+  S.myPos=null;buildCats();selectCat(S.cat);renderLobby();startLobbyLife();show("lobby");
+  toast("Back in the lobby");
 }
 
 /* =================== SCOREBOARD =================== */
 function renderScores(){
   const list=$("#scoreList");list.innerHTML="";
-  [...S.players].sort((a,b)=>b.score-a.score).forEach(p=>{
+  const sorted=[...S.players].sort((a,b)=>b.score-a.score);
+  sorted.forEach(p=>{
     const row=document.createElement("div");
     row.className="srow"+(S.guessedThisRound&&S.guessedThisRound.has(p.id)?" solved":"")+(p.id===S.drawerId?" draw":"");
-    row.innerHTML=`${avaHTML(p)}<span class="nm">${esc(p.name)}${crown(p)}${p.id===S.me.id?' (you)':''}</span>
+    row.innerHTML=`${avaHTML(p)}<span class="nm">${esc(p.name)}${crown(p)}${pigHat(p)}${p.id===S.me.id?' (you)':''}</span>
       ${p.id===S.drawerId?'<span class="mini">✏️</span>':''}<span class="pts">${p.score}</span>`;
     if(p.id!==S.me.id&&p.id!==S.drawerId){const k=document.createElement("button");k.className="skick";k.textContent="kick";k.title="Vote kick";k.onclick=()=>voteKick(p);row.appendChild(k);}
     list.appendChild(row);
   });
+  const led=$("#leaderName");if(led)led.textContent=(sorted[0]&&sorted[0].score>0)?sorted[0].name:"—";
 }
 
 /* =================== MODAL / JOIN =================== */
@@ -1057,8 +1239,8 @@ function askJoin(code){
     const c=$("#jCode").value.trim().toUpperCase();if(c.length<4)return toast("Enter the 4-letter code");
     S.room.code=c;S.room.pass=$("#jPass").value.trim();S.me.id="me";
     const hostChar=rand(CHARACTERS.map((_,j)=>j).filter(j=>j!==S.me.charId));
-    S.players=[{id:"host",name:rand(BOT_NAMES),charId:hostChar,score:0,isHost:true,isBot:true,skill:.6},{...S.me,score:0,isHost:false,isBot:false}];
-    closeModal();enterLobby();$("#lobbyHostName").textContent=esc(S.players[0].name)+"'s";
+    S.players=[{id:"host",name:rand(BOT_NAMES),charId:hostChar,score:0,isHost:true,isBot:true,ready:true,skill:.6},{...S.me,score:0,isHost:false,isBot:false,ready:false}];
+    closeModal();enterLobby();
     toast("Joined room "+c+" (demo)");
   };
 }
