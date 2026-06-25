@@ -101,7 +101,10 @@ h1,h2,h3{margin:0;font-weight:600}
 .topbar{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 16px;box-shadow:var(--shadow)}
 .round-tag{font-size:13px;color:var(--ink-soft);font-weight:600}
 .word-area{flex:1;text-align:center;min-width:0}
-.word-hint{font-family:var(--disp);font-size:30px;letter-spacing:8px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.word-hint{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:7px;font-family:var(--disp);font-size:25px;line-height:1.4;min-height:1.75em;padding:3px 0 2px;color:var(--ink);overflow:visible}
+.word-hint .ws{min-width:15px;text-align:center;border-bottom:2.5px solid var(--ink-soft);padding:0 3px 4px;box-sizing:border-box}
+.word-hint .ws.on{border-bottom-color:var(--accent)}
+.word-hint .hgap{width:15px;height:1px}
 .word-sub{font-size:12px;color:var(--ink-soft)}
 .timer{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-size:25px;min-width:70px;justify-content:flex-end;color:var(--ink)}
 .timer.urgent{color:var(--hot)}
@@ -330,6 +333,7 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="opt-row" style="margin-top:8px"><div class="label" style="margin:0">Total rounds (10–40)</div><div class="stepper"><button data-step="rounds" data-d="-1">−</button><b id="roundsValL">20</b><button data-step="rounds" data-d="1">+</button></div></div>
       <div class="ready-row"><span class="muted"><b id="readyCount">0</b>/<span id="readyTot">1</span> ready</span><button id="readyBtn" class="btn sm">I'm ready ✓</button></div>
       <button id="startGame" class="btn primary" style="width:100%;margin-top:12px;font-size:18px;padding:15px">Start game 🎨</button>
+      <button id="addBotBtn" class="btn sm" style="width:100%;margin-top:8px;display:none">+ Add a bot 🤖</button>
       <button id="leaveLobby" class="btn ghost" style="width:100%;margin-top:8px">Leave room</button>
     </div>
   </div>
@@ -635,13 +639,42 @@ function isClose(guess,word){const g=norm(guess),w=norm(word);if(!g||g===w)retur
   const d=lev(g,w),L=Math.max(g.length,w.length);
   return (w.length>=3&&(d===1||(d===2&&L>=6)));}
 
+/* ----- Thai grapheme clustering for the word hint (keeps tone marks & upper/lower vowels attached) ----- */
+function thaiSegs(w){
+  const lead=/[\u0E40-\u0E44]/, comb=/[\u0E31\u0E33-\u0E3A\u0E47-\u0E4E]/;   // เแโใไ (lead) ; tone/upper/lower vowels (comb)
+  const out=[]; let pend="";
+  for(const ch of (w||"")){
+    if(ch===" "){ if(pend){out.push(pend);pend="";} out.push(" "); continue; }
+    if(lead.test(ch)){ if(pend)out.push(pend); pend=ch; continue; }
+    if(comb.test(ch)){ pend=pend?pend+ch:ch; continue; }
+    if(pend && lead.test(pend[0]) && pend.length===1){ pend+=ch; }          // leading vowel waiting for its consonant
+    else { if(pend)out.push(pend); pend=ch; }
+  }
+  if(pend)out.push(pend);
+  return out;
+}
+function segLen(segs){return segs.filter(s=>s!==" ").length;}
+function _hintSlot(txt,on){const sp=document.createElement("span");sp.className="ws"+(on?" on":"");sp.textContent=on?txt:"";return sp;}
+function _hintGap(){const g=document.createElement("span");g.className="hgap";return g;}
+/* render from clusters + per-cluster reveal flags (host / offline / drawer) */
+function setWordHint(segs,reveal,showAll){
+  const el=$("#wordHint");if(!el)return;el.innerHTML="";
+  segs.forEach((seg,i)=>{ if(seg===" ")el.appendChild(_hintGap()); else el.appendChild(_hintSlot(seg, showAll|| (reveal&&reveal[i]) )); });
+}
+/* render from a mask token string "ก่ _ _ / _ _" (clients) */
+function setMaskHint(maskStr){
+  const el=$("#wordHint");if(!el)return;el.innerHTML="";
+  (maskStr||"").split(" ").forEach(tk=>{ if(tk===""||tk==="/")el.appendChild(_hintGap()); else el.appendChild(_hintSlot(tk, tk!=="_")); });
+}
+function setHintText(t){const el=$("#wordHint");if(el){el.innerHTML="";el.textContent=t;}}
+
 /* =================== STATE =================== */
 let S={
   me:{id:"me",name:"",charId:0},
   room:{code:"",pass:""}, players:[],
   cat:"animals", roundTime:60, botCount:3, target:1000, maxRounds:20, totalRounds:0, gameOver:false,
   roundNo:0, order:[], turnPtr:-1, myPos:null,
-  word:"", choices:[], revealMask:[], drawerId:null,
+  word:"", segs:[], choices:[], revealMask:[], drawerId:null,
   timeLeft:0, tickId:null, botDrawId:null, phaseTimer:null, lobbyTimer:null,
   guessedThisRound:new Set(), guessAt:{}, spam:{}, roundActive:false, bscale:1
 };
@@ -789,6 +822,7 @@ function renderLobby(){
   const isHost=meE&&meE.isHost;
   $("#startGame").style.display=isHost?"":"none";
   $("#readyBtn").style.display=isHost?"none":"";
+  $("#addBotBtn").style.display=(NET.online&&isHost)?"":"none";
 }
 S.champWins={};S.pigHats={};
 function maxIds(w){w=w||{};let mx=0;Object.keys(w).forEach(k=>{if(w[k]>mx)mx=w[k];});if(mx<=0)return new Set();return new Set(Object.keys(w).filter(k=>w[k]===mx));}
@@ -816,7 +850,7 @@ $$('.stepper button').forEach(b=>b.onclick=()=>{
   else if(b.dataset.step==="rounds"){S.maxRounds=Math.max(10,Math.min(40,S.maxRounds+d*5));$("#roundsValL").textContent=S.maxRounds;if(NET.online&&NET.isHost)netSetMeta("maxRounds",S.maxRounds);}
 });
 $("#readyBtn").onclick=()=>{const meE=S.players.find(p=>p.id===S.me.id);if(NET.online){netSetReady(!(meE&&meE.ready));return;}if(meE){meE.ready=!meE.ready;renderLobby();}};
-$("#leaveLobby").onclick=()=>location.reload();
+$("#leaveLobby").onclick=()=>{ if(NET.online)netLeave(); clearInterval(S.lobbyTimer); S.players=[]; show("home"); };
 
 function voteKick(p){
   if(NET.online){ if(NET.isHost&&p.id!==NET.uid){netRef("players/"+p.id).remove();toast("Removed "+p.name);} else toast("Only the host can remove players"); return; }
@@ -852,6 +886,7 @@ function voteKick(p){
 
 /* =================== START GAME =================== */
 $("#startGame").onclick=()=>{ if(NET.online){ if(NET.isHost)netStartGame(); else toast("Waiting for the host to start"); return; } modeVotePre(); };
+$("#addBotBtn").onclick=netAddBot;
 function startMatch(){
   clearInterval(S.lobbyTimer);
   S.players.forEach(p=>p.score=0);
@@ -1003,7 +1038,7 @@ function nextTurn(){
   S.roundNo++;S.roundActive=false;
   S.choices=[...WORDS[S.cat]].sort(()=>Math.random()-.5).slice(0,3);
   $("#roundNo").textContent=S.roundNo;updateCatTag();
-  $("#wordHint").textContent="• • •";$("#wordSub").textContent="New turn";
+  setHintText("• • •");$("#wordSub").textContent="New turn";
   clearBoard();renderScores();setToolsLocked(true);resetHourglass();
   $("#guessInput").disabled=true;$("#guessInput").placeholder="New turn...";
   sndTurn();
@@ -1032,17 +1067,17 @@ function pickPhaseHuman(drawer,rn){
 }
 function beginRound(word){
   clearPhase();
-  S.word=word;S.revealMask=[...word].map(ch=>ch===" "?" ":"");
+  S.word=word;S.segs=thaiSegs(word);S.revealMask=S.segs.map(s=>s===" ");
   S.guessedThisRound=new Set();S.guessAt={};S.spam={};S.timeLeft=S.roundTime;S.roundActive=true;
   const meDraw=S.drawerId===S.me.id;const drawer=S.players.find(p=>p.id===S.drawerId);
   clearBoard();renderScores();setToolsLocked(!meDraw);resetHourglass();
   if(meDraw){
     showCenter(`<div class="big">Your turn to draw!</div><div class="reveal">${esc(word)}</div><div class="word-sub" style="margin-top:8px">Category: ${CAT_NAME[S.cat]}</div>`,1700);
-    $("#wordHint").textContent=[...word].join(" ");$("#wordSub").textContent="Draw this word for others";
+    setWordHint(S.segs,null,true);$("#wordSub").textContent="Draw this word for others";
     $("#guessInput").disabled=true;$("#guessInput").placeholder="You're drawing";
   }else{
     updateHintBar();
-    showCenter(`<div class="big">${esc(drawer.name)} is drawing...</div><div class="word-sub" style="margin-top:6px">${[...word].length} letters · ${CAT_NAME[S.cat]}</div>`,1400);
+    showCenter(`<div class="big">${esc(drawer.name)} is drawing...</div><div class="word-sub" style="margin-top:6px">${segLen(S.segs)} letters · ${CAT_NAME[S.cat]}</div>`,1400);
     $("#guessInput").disabled=false;$("#guessInput").placeholder="Type your guess...";
     const rn=S.roundNo;setTimeout(()=>{if(S.roundActive&&S.roundNo===rn&&S.drawerId===drawer.id)botAutoDraw();},1500);
   }
@@ -1063,7 +1098,7 @@ function updateHourglass(p){
 }
 function startTimer(){
   clearInterval(S.tickId);const total=S.roundTime;updateHourglass(1);
-  const realLetters=[...S.word].filter(c=>c!==" ").length;
+  const realLetters=segLen(S.segs);
   const step=Math.max(1,Math.ceil(total/Math.max(2,realLetters-1)));
   S.tickId=setInterval(()=>{
     S.timeLeft--;$("#timeLeft").textContent=Math.max(0,S.timeLeft);
@@ -1075,16 +1110,15 @@ function startTimer(){
   },1000);
 }
 function revealLetter(){
-  const idxs=[...S.word].map((c,i)=>i).filter(i=>S.word[i]!==" "&&S.revealMask[i]==="");
-  const total=[...S.word].filter(c=>c!==" ").length;
+  const idxs=S.segs.map((s,i)=>i).filter(i=>S.segs[i]!==" "&&!S.revealMask[i]);
+  const total=segLen(S.segs);
   if(idxs.length<=Math.ceil(total/2))return;
-  const i=rand(idxs);S.revealMask[i]=S.word[i];updateHintBar();
+  S.revealMask[rand(idxs)]=true;updateHintBar();
 }
 function updateHintBar(){
-  if(S.drawerId===S.me.id){$("#wordHint").textContent=[...S.word].join(" ");return;}
-  const shown=[...S.word].map((ch,i)=>ch===" "?" ":(S.revealMask[i]||"_"));
-  $("#wordHint").textContent=shown.join(" ");
-  $("#wordSub").textContent=`${[...S.word].filter(c=>c!==" ").length} letters · ${CAT_NAME[S.cat]}`;
+  if(S.drawerId===S.me.id){setWordHint(S.segs,null,true);return;}
+  setWordHint(S.segs,S.revealMask,false);
+  $("#wordSub").textContent=`${segLen(S.segs)} letters · ${CAT_NAME[S.cat]}`;
 }
 
 /* =================== BOT AUTO-DRAW =================== */
@@ -1275,7 +1309,7 @@ const firebaseConfig = {
   appId: "1:346657179865:web:ece9884491eb2260da16c8",
   databaseURL: "https://gusswhat-newkid-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
-const NET={ ready:false, online:false, code:null, uid:null, isHost:false, db:null, base:null, hostUid:null, metaPhase:"lobby", playersMap:{}, wordRound:null };
+const NET={ ready:false, online:false, code:null, uid:null, isHost:false, db:null, base:null, hostUid:null, metaPhase:"lobby", playersMap:{}, wordRound:null, lastRound:null };
 function netAvailable(){ return typeof firebase!=="undefined" && firebase.database && firebase.auth; }
 let _authReady=null;
 function netEnsureAuth(){
@@ -1325,8 +1359,16 @@ function netJoinSelf(asHost){
 }
 function netLeave(){
   if(!NET.online)return;
-  try{ netRef("players/"+NET.uid).remove(); netRef().off(); }catch(e){}
-  NET.online=false;NET.code=null;NET.base=null;NET.isHost=false;
+  try{
+    if(NET.isHost){
+      const ids=Object.keys(NET.playersMap||{}).filter(id=>id!==NET.uid&&!(NET.playersMap[id]||{}).isBot)
+        .sort((a,b)=>((NET.playersMap[a]||{}).joined||0)-((NET.playersMap[b]||{}).joined||0));
+      if(ids.length){ netRef("meta/host").set(ids[0]); netRef("players/"+ids[0]+"/isHost").set(true); }  // transfer host now
+      else { netRef().remove(); }   // last human out -> delete room (and its bots)
+    }
+    netRef("players/"+NET.uid).remove(); netRef().off();
+  }catch(e){}
+  NET.online=false;NET.code=null;NET.base=null;NET.isHost=false;NET.lastRound=null;NET.playersMap={};
 }
 
 /* ---------- watchers ---------- */
@@ -1341,7 +1383,7 @@ function netWatch(){
 }
 function netApplyPlayers(map){
   NET.playersMap=map;
-  const arr=Object.keys(map).map(uid=>({id:uid,name:map[uid].name||"Player",charId:map[uid].charId||0,ready:!!map[uid].ready,isHost:!!map[uid].isHost,isBot:false,score:map[uid].score||0,joined:map[uid].joined||0}));
+  const arr=Object.keys(map).map(uid=>({id:uid,name:map[uid].name||"Player",charId:map[uid].charId||0,ready:!!map[uid].ready,isHost:!!map[uid].isHost,isBot:!!map[uid].isBot,skill:map[uid].skill||0.5,score:map[uid].score||0,joined:map[uid].joined||0}));
   arr.sort((a,b)=>a.joined-b.joined);
   S.players=arr;
   netMaybeElect();
@@ -1394,13 +1436,13 @@ async function netResumeHostIfPlaying(){
   S.guessedThisRound=new Set(Object.keys(gs.solved||{}));
   S.roundActive=!gs.reason;
   try{ const w=(await netRef("secret/word").get()).val(); if(w)S.word=w; }catch(e){}
-  if(S.word){ const m=(gs.mask||"").split(" "); S.revealMask=S.word.split("").map((c,i)=>c===" "?" ":(m[i]&&m[i]!=="_"?m[i]:"")); }
+  if(S.word){ S.segs=thaiSegs(S.word); const m=(gs.mask||"").split(" "); S.revealMask=S.segs.map((s,i)=> s===" " || (m[i]&&m[i]!=="_"&&m[i]!=="/") ); }
   clearInterval(S.tickId);
   if(!S.players.find(p=>p.id===S.drawerId))return netEndRoundHost("Drawer left");
   if(S.roundActive&&S.timeLeft>0)S.tickId=setInterval(netTickHost,1000);
   else netNextTurnHost();
 }
-function netEnterGame(){ $("#guessfeed").innerHTML="";$("#logList").innerHTML="";show("game");setupBoard();buildToolUI();renderScores();$("#roundTot").textContent=S.totalRounds||S.maxRounds; }
+function netEnterGame(){ NET.lastRound=null;$("#guessfeed").innerHTML="";$("#logList").innerHTML="";show("game");setupBoard();buildToolUI();renderScores();$("#roundTot").textContent=S.totalRounds||S.maxRounds; }
 
 /* ---------- host: settings & start ---------- */
 function netSetReady(v){ if(NET.online)netRef("players/"+NET.uid+"/ready").set(!!v); }
@@ -1416,18 +1458,77 @@ function netStartGame(){
   return true;
 }
 
+/* ---------- bot doodles (recognizable drawings) ---------- */
+function _circle(cx,cy,r,n){const p=[];n=n||16;for(let i=0;i<=n;i++){const a=i/n*Math.PI*2;p.push([+(cx+r*Math.cos(a)).toFixed(3),+(cy+r*Math.sin(a)).toFixed(3)]);}return p;}
+function _star(cx,cy,r){const p=[];for(let i=0;i<=5;i++){const a=-Math.PI/2+i*4*Math.PI/5;p.push([+(cx+r*Math.cos(a)).toFixed(3),+(cy+r*Math.sin(a)).toFixed(3)]);}return p;}
+const DOODLES={
+  sun:()=>[_circle(.5,.42,.12),[[.5,.24],[.5,.12]],[[.5,.6],[.5,.72]],[[.32,.42],[.2,.42]],[[.68,.42],[.8,.42]],[[.37,.29],[.28,.2]],[[.63,.29],[.72,.2]],[[.37,.55],[.28,.64]],[[.63,.55],[.72,.64]]],
+  house:()=>[[[.32,.5],[.32,.72],[.68,.72],[.68,.5]],[[.27,.5],[.5,.3],[.73,.5]],[[.46,.72],[.46,.58],[.56,.58],[.56,.72]]],
+  fish:()=>[[[.34,.45],[.44,.34],[.6,.34],[.68,.45],[.6,.56],[.44,.56],[.34,.45]],[[.68,.45],[.82,.36],[.82,.54],[.68,.45]],[[.43,.42],[.45,.42]]],
+  cat:()=>[_circle(.5,.46,.15),[[.4,.34],[.36,.21],[.47,.31]],[[.6,.34],[.64,.21],[.53,.31]],[[.45,.45],[.46,.45]],[[.55,.45],[.56,.45]],[[.47,.52],[.5,.55],[.53,.52]]],
+  tree:()=>[_circle(.5,.36,.16),[[.46,.5],[.46,.74]],[[.54,.5],[.54,.74]]],
+  star:()=>[_star(.5,.44,.18)],
+  heart:()=>[[[.5,.6],[.34,.44],[.36,.32],[.44,.3],[.5,.38],[.56,.3],[.64,.32],[.66,.44],[.5,.6]]],
+  flower:()=>[_circle(.5,.4,.06),_circle(.5,.28,.06),_circle(.62,.4,.06),_circle(.5,.52,.06),_circle(.38,.4,.06),[[.5,.58],[.5,.78]]],
+  car:()=>[[[.28,.55],[.32,.44],[.68,.44],[.72,.55],[.72,.6],[.28,.6],[.28,.55]],_circle(.38,.62,.05),_circle(.62,.62,.05)],
+  bird:()=>[[[.36,.46],[.46,.4],[.6,.42],[.66,.48],[.58,.52],[.44,.52],[.36,.46]],[[.66,.46],[.75,.44]],[[.46,.44],[.54,.38],[.58,.44]]],
+  cloud:()=>[[[.32,.54],[.3,.46],[.37,.41],[.43,.36],[.53,.36],[.6,.41],[.68,.43],[.7,.51],[.66,.55],[.34,.55],[.32,.54]]],
+  moon:()=>[[[.56,.26],[.46,.3],[.42,.42],[.46,.54],[.56,.58],[.5,.5],[.48,.42],[.5,.34],[.56,.26]]],
+  boat:()=>[[[.3,.56],[.7,.56],[.62,.66],[.38,.66],[.3,.56]],[[.5,.56],[.5,.3]],[[.5,.3],[.5,.52],[.66,.5],[.5,.34]]],
+  umbrella:()=>[[[.3,.46],[.5,.3],[.7,.46],[.3,.46]],[[.38,.46],[.44,.42],[.5,.46],[.56,.42],[.62,.46]],[[.5,.46],[.5,.66],[.56,.7]]],
+  snake:()=>[[[.26,.5],[.36,.42],[.44,.5],[.52,.42],[.6,.5],[.68,.44]],[[.68,.44],[.75,.42],[.72,.48],[.68,.44]]],
+  mountain:()=>[[[.24,.62],[.42,.34],[.54,.5],[.62,.38],[.78,.62],[.24,.62]]],
+  ball:()=>[_circle(.5,.46,.15),[[.35,.46],[.65,.46]],[[.5,.31],[.5,.61]]],
+  banana:()=>[[[.34,.4],[.42,.56],[.58,.62],[.68,.56],[.6,.58],[.46,.54],[.38,.42],[.34,.4]]],
+  apple:()=>[_circle(.5,.48,.13),[[.5,.36],[.52,.27]],[[.52,.29],[.6,.25],[.58,.32],[.52,.29]]]
+};
+const DOODLE_MAP=[[["อาทิตย์","แดด","สุริย"],"sun"],[["บ้าน"],"house"],[["ปลา"],"fish"],[["แมว"],"cat"],[["ต้นไม้","ต้นไม"],"tree"],[["ดาว"],"star"],[["หัวใจ"],"heart"],[["ดอกไม้","ทานตะวัน","กุหลาบ"],"flower"],[["รถ"],"car"],[["นก"],"bird"],[["เมฆ"],"cloud"],[["จันทร์"],"moon"],[["เรือ"],"boat"],[["ร่ม"],"umbrella"],[["งู"],"snake"],[["ภูเขา"],"mountain"],[["บอล"],"ball"],[["กล้วย"],"banana"],[["แอปเปิ"],"apple"]];
+function doodleFor(word){for(const [keys,key] of DOODLE_MAP){if(keys.some(k=>word.includes(k)))return key;}return null;}
+function netBotDraw(word,byId,rn){
+  const key=doodleFor(word);
+  const strokes=key?DOODLES[key]():DOODLES.cloud();
+  const segs=[];strokes.forEach(poly=>{for(let i=1;i<poly.length;i++)segs.push([poly[i-1],poly[i]]);});
+  let i=0;clearInterval(S.botDrawId);
+  S.botDrawId=setInterval(()=>{
+    if(!S.roundActive||S.roundNo!==rn||!NET.isHost||i>=segs.length){clearInterval(S.botDrawId);return;}
+    const seg=segs[i++];netRef("strokes").push({by:byId,a:seg[0],b:seg[1],c:"#3A3A40",w:5});
+  },130);
+}
+function netScheduleBotGuesses(rn){
+  if(!NET.isHost)return;
+  S.players.filter(p=>p.isBot&&p.id!==S.drawerId).forEach(bot=>{
+    const delay=(0.3+Math.random()*0.55)*S.roundTime;
+    setTimeout(()=>{ if(S.roundActive&&S.roundNo===rn&&!S.guessedThisRound.has(bot.id)&&Math.random()<(bot.skill||0.5))netAwardCorrect(bot.id,bot.name,bot.charId); },delay*1000);
+  });
+}
+function netAddBot(){
+  if(!(NET.online&&NET.isHost))return;
+  if((S.players||[]).length>=20)return toast("Room is full (20)");
+  const id="bot_"+Math.random().toString(36).slice(2,8);
+  const used=new Set(S.players.map(p=>p.charId));
+  netRef("players/"+id).set({name:rand(BOT_NAMES),charId:pickChar(used),score:0,isHost:false,isBot:true,ready:true,skill:0.45+Math.random()*0.4,joined:firebase.database.ServerValue.TIMESTAMP});
+  toast("Bot added 🤖");
+}
+
 /* ---------- host: turn loop ---------- */
 function netNextTurnHost(){
   if(S.roundNo>=S.totalRounds)return netEndGameHost();
   S.turnPtr=(S.turnPtr+1)%S.order.length;S.roundNo++;
   S.drawerId=S.order[S.turnPtr];
-  S.word=rand(WORDS[S.cat]);
-  S.revealMask=S.word.split("").map(c=>c===" "?" ":"");
+  const drawerP=S.players.find(p=>p.id===S.drawerId);
+  if(drawerP&&drawerP.isBot){                       // bots prefer words they can actually draw
+    const dW=WORDS[S.cat].filter(w=>doodleFor(w));
+    S.word=dW.length?rand(dW):rand(WORDS[S.cat]);
+  } else S.word=rand(WORDS[S.cat]);
+  S.segs=thaiSegs(S.word);S.revealMask=S.segs.map(s=>s===" ");
   S.guessedThisRound=new Set();
   S.timeLeft=S.roundTime;S.roundActive=true;
   netRef("secret/word").set(S.word);            // hidden — only host & drawer can read (rules)
   netRef("strokes").remove();clearBoard();
   netPushGameHost("","");
+  const rn=S.roundNo;
+  if(drawerP&&drawerP.isBot)setTimeout(()=>{ if(S.roundActive&&S.roundNo===rn)netBotDraw(S.word,S.drawerId,rn); },900);  // bot draws a doodle
+  netScheduleBotGuesses(rn);                                                                                            // bots may guess
   clearInterval(S.tickId);S.tickId=setInterval(netTickHost,1000);
   sndTurn();
 }
@@ -1440,11 +1541,11 @@ function netTickHost(){
   if(S.timeLeft<=0)netEndRoundHost("Time's up!");
 }
 function netRevealOneHost(){
-  const hidden=[];S.revealMask.forEach((m,i)=>{if(m===""&&S.word[i]!==" ")hidden.push(i);});
+  const hidden=[];S.revealMask.forEach((on,i)=>{if(!on&&S.segs[i]!==" ")hidden.push(i);});
   if(hidden.length<=1)return;
-  const i=hidden[Math.floor(Math.random()*hidden.length)];S.revealMask[i]=S.word[i];
+  S.revealMask[hidden[Math.floor(Math.random()*hidden.length)]]=true;
 }
-function netMaskHost(){ return S.word.split("").map((c,i)=>c===" "?" ":(S.revealMask[i]||"_")).join(" "); }
+function netMaskHost(){ return S.segs.map((s,i)=>s===" "?"/":(S.revealMask[i]?s:"_")).join(" "); }
 function netPushGameHost(reason,answer){
   const solved={};S.guessedThisRound.forEach(id=>solved[id]=true);
   const g={phase:"playing",roundNo:S.roundNo,totalRounds:S.totalRounds,cat:S.cat,drawerId:S.drawerId,mask:netMaskHost(),timeLeft:S.timeLeft,reason:reason||"",answer:answer||"",solved};
@@ -1470,19 +1571,23 @@ function netEndGameHost(){
 /* ---------- guesses (host judges) ---------- */
 function netPushGuess(text){ if(NET.online)netRef("guesses").push({uid:NET.uid,name:S.me.name||"Player",char:S.me.charId,text:text}); }
 function netChatRaw(o){ netRef("chat").push(o); }
+function netAwardCorrect(id,name,char){
+  if(!S.roundActive||S.guessedThisRound.has(id)||id===S.drawerId)return;
+  S.guessedThisRound.add(id);
+  const frac=Math.max(0,S.timeLeft/S.roundTime),pts=Math.round(50+250*frac);
+  const gp=S.players.find(p=>p.id===id); if(gp){gp.score=(gp.score||0)+pts;netRef("players/"+id+"/score").set(gp.score);}
+  const dp=S.players.find(p=>p.id===S.drawerId); if(dp){dp.score=(dp.score||0)+Math.round(pts*0.5);netRef("players/"+S.drawerId+"/score").set(dp.score);}
+  netChatRaw({kind:"correct",name,char,pts});
+  netPushGameHost("","");
+  const need=S.players.filter(x=>x.id!==S.drawerId).length;
+  if(need>0&&S.guessedThisRound.size>=need)netEndRoundHost("Everyone guessed it!");
+}
 function netJudge(g,ref){
   if(!g){ref&&ref.remove();return;}
   if(!S.roundActive||g.uid===S.drawerId){ref&&ref.remove();return;}
   if(S.guessedThisRound.has(g.uid)){ netChatRaw({kind:"say",name:g.name,char:g.char,text:g.text}); ref&&ref.remove(); return; }
   if(norm(g.text)===norm(S.word)){
-    S.guessedThisRound.add(g.uid);
-    const frac=Math.max(0,S.timeLeft/S.roundTime),pts=Math.round(50+250*frac);
-    const gp=S.players.find(p=>p.id===g.uid); if(gp){gp.score+=pts;netRef("players/"+g.uid+"/score").set(gp.score);}
-    const dp=S.players.find(p=>p.id===S.drawerId); if(dp){dp.score+=Math.round(pts*0.5);netRef("players/"+S.drawerId+"/score").set(dp.score);}
-    netChatRaw({kind:"correct",name:g.name,char:g.char,pts});
-    netPushGameHost("","");
-    const need=S.players.filter(x=>x.id!==S.drawerId).length;
-    if(need>0&&S.guessedThisRound.size>=need)netEndRoundHost("Everyone guessed it!");
+    netAwardCorrect(g.uid,g.name,g.char);
   } else {
     netChatRaw({kind:isClose(g.text,S.word)?"close":"say",name:g.name,char:g.char,text:g.text});
   }
@@ -1509,6 +1614,7 @@ function netApplyGame(g){
   if(!g)return;
   if(g.phase==="ended"){netShowEnd(g);return;}
   if(!$("#game").classList.contains("on"))netEnterGame();
+  if(NET.lastRound!==g.roundNo){ if(board)clearBoard(); NET.lastRound=g.roundNo; }   // clear on new turn (host + clients)
   S.roundNo=g.roundNo;S.totalRounds=g.totalRounds;S.cat=g.cat;S.drawerId=g.drawerId;S.timeLeft=g.timeLeft;
   S.guessedThisRound=new Set(Object.keys(g.solved||{}));
   S.roundActive=!g.reason;
@@ -1516,14 +1622,14 @@ function netApplyGame(g){
   $("#timeLeft").textContent=Math.max(0,g.timeLeft);
   const amDrawer=(g.drawerId===S.me.id);
   if(amDrawer){
-    if(NET.isHost){ $("#wordHint").textContent=S.word||""; }
+    if(NET.isHost){ setWordHint(thaiSegs(S.word),null,true); }
     else if(NET.wordRound!==g.roundNo){
       NET.wordRound=g.roundNo;
-      netRef("secret/word").get().then(s=>{ if(s&&s.exists()){ S.word=s.val(); if(S.drawerId===S.me.id)$("#wordHint").textContent=S.word; } }).catch(()=>{});
-    } else if(S.word){ $("#wordHint").textContent=S.word; }
+      netRef("secret/word").get().then(s=>{ if(s&&s.exists()){ S.word=s.val(); if(S.drawerId===S.me.id)setWordHint(thaiSegs(S.word),null,true); } }).catch(()=>{});
+    } else if(S.word){ setWordHint(thaiSegs(S.word),null,true); }
   } else {
     if(!NET.isHost)S.word="";
-    $("#wordHint").textContent=g.mask||"_ _ _";
+    setMaskHint(g.mask||"_");
   }
   setToolsLocked(!amDrawer);$("#guessInput").disabled=amDrawer;
   renderScores();
