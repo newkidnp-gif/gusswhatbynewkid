@@ -261,6 +261,10 @@ h1,h2,h3{margin:0;font-weight:600}
 .sidecard{padding:20px;max-height:calc(100vh - 56px);overflow:auto}
 .ready-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
 .vote-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.vote-cards.scrolly{grid-template-columns:repeat(3,1fr);gap:8px;max-height:46vh;overflow-y:auto;padding:4px 4px 2px}
+.vote-cards.scrolly .vcard{padding:10px 6px;border-radius:13px}
+.vote-cards.scrolly .ve{font-size:24px}
+.vote-cards.scrolly .vl{font-size:11px}
 .vcard{border:2px solid var(--line);border-radius:18px;padding:18px 10px;background:var(--surface-2);text-align:center;position:relative;transition:.12s}
 .vcard:hover{border-color:var(--accent);transform:translateY(-2px)}
 .vcard.mine{border-color:var(--accent);background:var(--accent-soft)}
@@ -284,13 +288,22 @@ h1,h2,h3{margin:0;font-weight:600}
 .ava-wrap{position:relative;flex:0 0 auto;line-height:0}
 .ava-badge{position:absolute;top:-9px;left:-7px;font-size:15px;z-index:3;filter:drop-shadow(0 1px 1px rgba(74,63,53,.3))}
 .ava-badge b{font-family:var(--disp);font-size:9px;color:#fff;background:var(--accent);border-radius:6px;padding:0 2px;margin-left:-2px}
-/* chat bubble above the head (lobby chat) */
-.chat-bubble{position:absolute;left:50%;top:-32px;transform:translateX(-50%);max-width:130px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:4px 9px;font-size:12px;font-weight:600;color:var(--ink);box-shadow:0 3px 8px rgba(74,63,53,.22);z-index:8;pointer-events:none;text-align:center;line-height:1.25;word-break:break-word}
+/* chat bubble above the head (lobby chat) — wide horizontal, grows with text, multi-line */
+.chat-bubble{position:absolute;left:50%;bottom:calc(100% + 5px);transform:translateX(-50%);min-width:96px;max-width:240px;width:max-content;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:0 4px 12px rgba(74,63,53,.24);z-index:9;pointer-events:none;text-align:center;line-height:1.38;white-space:normal;word-break:break-word}
 .chat-bubble::after{content:"";position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #fff}
 .chat-bubble.pop{animation:emopop .16s ease-out}
 /* lobby chat box */
 .lobbychat{display:flex;gap:7px;margin-top:10px}
 .lobbychat .field{padding:10px 12px}
+.lobbychat-log{margin-top:10px;max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;padding:8px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;font-size:12.5px;line-height:1.35}
+.lobbychat-log:empty{display:none}
+.lobbychat-log .lcmsg{word-break:break-word}
+.lobbychat-log .lcmsg b{color:var(--accent-ink);font-weight:800;margin-right:4px}
+.lobbychat-log .lcmsg.me b{color:var(--good)}
+.home-sound{display:flex;gap:10px;margin-top:14px;justify-content:center}
+.soundtoggle{padding:9px 16px;border-radius:999px;background:var(--surface-2);color:var(--ink);font-weight:700;font-size:13px;border:1.5px solid var(--line);transition:.15s}
+.soundtoggle.off{opacity:.55;background:var(--surface);text-decoration:line-through}
+.soundtoggle:hover{border-color:var(--accent)}
 @keyframes emopop{0%{transform:translateX(-50%) scale(.4)}60%{transform:translateX(-50%) scale(1.18)}100%{transform:translateX(-50%) scale(1)}}
 @keyframes floatup{0%{opacity:0;transform:translate(-50%,6px) scale(.5)}25%{opacity:1;transform:translate(-50%,-14px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-66px) scale(1)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.05s!important}}
@@ -316,6 +329,11 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="home-actions">
         <button id="btnCreate" class="btn primary">Create room</button>
         <button id="btnJoin" class="btn">Join room</button>
+      </div>
+      <div class="home-sound">
+        <button id="muteBtnHome" class="soundtoggle" title="Sound effects on / off">🔊 Sound: On</button>
+        <button id="bgmBtnHome" class="soundtoggle bgm-toggle" title="Background music on / off">🎵 Music: On</button>
+        <button id="bgmNextHome" class="soundtoggle" title="Change music track">🎶 Cozy</button>
       </div>
     </div>
     <p class="muted" style="margin-top:14px;font-size:12px">Demo plays with local bots · ready to wire a real server</p>
@@ -348,6 +366,7 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="ready-row"><span class="muted"><b id="readyCount">0</b>/<span id="readyTot">1</span> ready</span><button id="readyBtn" class="btn sm">I'm ready ✓</button></div>
       <button id="startGame" class="btn primary" style="width:100%;margin-top:12px;font-size:18px;padding:15px">Start game 🎨</button>
       <button id="addBotBtn" class="btn sm" style="width:100%;margin-top:8px;display:none">+ Add a bot 🤖</button>
+      <div class="lobbychat-log" id="lobbyChatLog"></div>
       <div class="lobbychat"><input id="lobbyChatInput" class="field" placeholder="Say something to the room..." maxlength="60"><button id="lobbyChatSend" class="btn primary sm">Send</button></div>
       <button id="leaveLobby" class="btn ghost" style="width:100%;margin-top:8px">Leave room</button>
     </div>
@@ -623,7 +642,7 @@ function animalFigure(c){
 function avaHTML(p,extra){const c=charOf(p);return `<div class="pava ${extra||''}" style="background:${c.ring}">${animalHead(c)}</div>`;}
 
 /* =================== TIMING / TARGET =================== */
-const RESULT_WAIT=8, NEWTURN_WAIT=10, PICK_WAIT=10, VOTE_WAIT=8;   // seconds between rounds
+const RESULT_WAIT=8, NEWTURN_WAIT=10, PICK_WAIT=10, VOTE_WAIT=15;   // seconds between rounds
 
 /* =================== SOUND SYSTEM (synth, no files) =================== */
 let _actx=null, _muted=false;
@@ -641,26 +660,30 @@ function sndTurn(){_tone(523,.1,"sine",.16);_tone(784,.12,"sine",.16,.08);}
 function sndTick(){_tone(880,.05,"sine",.1);}
 function sndUrgent(level){const base=level>=2?740:480;_tone(base,.08,"square",.16);if(level>=2)_tone(base*1.5,.09,"square",.13,.12);}
 
-/* ===== BACKGROUND MUSIC (cozy procedural loop, toggle) ===== */
-let bgmOn=true, bgmStep=0, bgmTimer=null;   // music ON by default (starts on first interaction)
-// gentle I–V–vi–IV in C, each chord = 4-note arpeggio
-const BGM_CHORDS=[[523,659,784,1047],[392,494,587,784],[440,523,659,880],[349,440,523,698]];
-const BGM_BASS=[131,98,110,87];
+/* ===== BACKGROUND MUSIC (relaxing procedural loops, multiple tracks, toggle + change) ===== */
+let bgmOn=true, bgmStep=0, bgmTimer=null, bgmTrack=0;   // music ON by default (starts on first interaction)
+const BGM_TRACKS=[
+  {name:"Cozy",   chords:[[523,659,784,1047],[392,494,587,784],[440,523,659,880],[349,440,523,698]], bass:[131,98,110,87],   tempo:460},
+  {name:"Dreamy", chords:[[440,554,659,880],[330,415,494,659],[392,494,587,784],[294,370,440,587]],   bass:[110,82,98,73],    tempo:540},
+  {name:"Lofi",   chords:[[466,587,698,932],[392,466,587,784],[349,440,523,698],[311,392,466,622]],   bass:[117,98,87,78],    tempo:600},
+  {name:"Float",  chords:[[523,698,784,1047],[494,659,784,988],[440,587,698,880],[392,523,659,784]],  bass:[131,123,110,98],  tempo:640}
+];
 function bgmTone(freq,dur,vol,type){const a=_audio();if(!a||!bgmOn)return;const t=a.currentTime,o=a.createOscillator(),g=a.createGain();
   o.type=type||"sine";o.frequency.value=freq;o.connect(g);g.connect(a.destination);
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.09);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
   o.start(t);o.stop(t+dur+.05);}
 function bgmTick(){
   if(!bgmOn)return;
-  const ci=Math.floor(bgmStep/4)%BGM_CHORDS.length, ni=bgmStep%4;
-  bgmTone(BGM_CHORDS[ci][ni], .7, .045, "sine");          // soft arpeggio
-  if(ni===0){bgmTone(BGM_BASS[ci], 1.9, .04, "triangle"); // gentle bass
-             bgmTone(BGM_CHORDS[ci][2], 1.7, .02, "sine");}// pad
+  const tr=BGM_TRACKS[bgmTrack];
+  const ci=Math.floor(bgmStep/4)%tr.chords.length, ni=bgmStep%4;
+  bgmTone(tr.chords[ci][ni], .9, .04, "sine");            // soft arpeggio
+  if(ni===0){bgmTone(tr.bass[ci], 2.2, .038, "triangle"); // gentle bass
+             bgmTone(tr.chords[ci][2], 2.0, .018, "sine");}// pad
   bgmStep++;
 }
 function startBgm(){
   if(bgmTimer)return;const a=_audio();if(!a)return;if(a.state==="suspended")a.resume();
-  bgmStep=0;bgmTimer=setInterval(bgmTick,440);bgmTick();
+  bgmStep=0;bgmTimer=setInterval(bgmTick,BGM_TRACKS[bgmTrack].tempo);bgmTick();
 }
 function toggleBgm(){
   bgmOn=!bgmOn;
@@ -668,7 +691,13 @@ function toggleBgm(){
   else{clearInterval(bgmTimer);bgmTimer=null;}
   syncBgmBtns();
 }
-function syncBgmBtns(){$$(".bgm-toggle").forEach(b=>b.classList.toggle("off",!bgmOn));}
+function cycleBgmTrack(){
+  bgmTrack=(bgmTrack+1)%BGM_TRACKS.length;
+  if(bgmOn){clearInterval(bgmTimer);bgmTimer=null;startBgm();}
+  toast("🎶 "+BGM_TRACKS[bgmTrack].name);
+  syncBgmBtns();
+}
+function syncBgmBtns(){$$(".bgm-toggle").forEach(b=>b.classList.toggle("off",!bgmOn));const h=$("#bgmBtnHome");if(h)h.textContent=bgmOn?"🎵 Music: On":"🎵 Music: Off";const n=$("#bgmNextHome");if(n)n.textContent="🎶 "+BGM_TRACKS[bgmTrack].name;}
 document.addEventListener("pointerdown",()=>{const a=_audio();if(a&&a.state==="suspended")a.resume();if(bgmOn)startBgm();},{once:false});
 
 /* =================== TEXT HELPERS =================== */
@@ -829,9 +858,17 @@ function chatBubble(id,text){
   b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop");
   clearTimeout(b._t);b._t=setTimeout(()=>{if(b)b.remove();},5500);       // auto-hide
 }
+function addLobbyChatLog(name,text,mine){
+  const log=$("#lobbyChatLog");if(!log)return;
+  const d=document.createElement("div");d.className="lcmsg"+(mine?" me":"");
+  d.innerHTML=`<b>${esc(name||"Player")}</b>${esc(text)}`;
+  log.appendChild(d);log.scrollTop=log.scrollHeight;
+  while(log.children.length>80)log.removeChild(log.firstChild);
+}
 function sendLobbyChat(){
   const inp=$("#lobbyChatInput");if(!inp)return;const v=inp.value.trim();if(!v)return;inp.value="";
   chatBubble(S.me.id,v);
+  addLobbyChatLog(S.me.name||"You",v,true);
   if(NET.online)netRef("lobbyChat").push({id:NET.uid,name:S.me.name||"Player",text:v,at:firebase.database.ServerValue.TIMESTAMP});
 }
 function startLobbyLife(){
@@ -926,7 +963,7 @@ $$('.stepper button').forEach(b=>b.onclick=()=>{
   else if(b.dataset.step==="rounds"){const opts=[5,10,15,20,30];let i=opts.indexOf(S.maxRounds);if(i<0)i=1;i=Math.max(0,Math.min(opts.length-1,i+d));S.maxRounds=opts[i];$("#roundsValL").textContent=S.maxRounds;if(NET.online&&NET.isHost)netSetMeta("maxRounds",S.maxRounds);}
 });
 $("#readyBtn").onclick=()=>{const meE=S.players.find(p=>p.id===S.me.id);if(NET.online){netSetReady(!(meE&&meE.ready));return;}if(meE){meE.ready=!meE.ready;renderLobby();}};
-$("#leaveLobby").onclick=()=>{ if(NET.online)netLeave(); clearInterval(S.lobbyTimer); S.players=[]; show("home"); };
+$("#leaveLobby").onclick=()=>{ if(NET.online)netLeave(); clearInterval(S.lobbyTimer); S.players=[]; const lg=$("#lobbyChatLog");if(lg)lg.innerHTML=""; show("home"); };
 
 function voteKick(p){
   if(NET.online){ if(NET.isHost&&p.id!==NET.uid){netRef("players/"+p.id).remove();toast("Removed "+p.name);} else toast("Only the host can remove players"); return; }
@@ -977,18 +1014,18 @@ function startMatch(){
 }
 /* pre-game MODE VOTE: large cards, real-time counts, tie=random, instant start when all voted */
 function modeVotePre(){
-  const keys=CATS.map(c=>c.key).sort(()=>Math.random()-.5).slice(0,4);
+  const keys=CATS.map(c=>c.key);   // ALL categories
   const votes={};keys.forEach(k=>votes[k]=0);
   const voted=new Set();let myVote=null,t=VOTE_WAIT,done=false;
   const N=S.players.length;
   function cardHTML(){return keys.map(k=>{const c=CATS.find(x=>x.key===k);return `<button class="vcard${myVote===k?' mine':''}" data-cat="${k}"><div class="ve">${c.emoji}</div><div class="vl">${c.name}</div><div class="cnt">${votes[k]}</div></button>`;}).join("");}
   function render(){
-    openModal(`<h2 class="disp">Vote the mode</h2><p class="muted">Most votes starts · tie = random</p>
-      <div class="vote-cards">${cardHTML()}</div>
+    openModal(`<h2 class="disp">Vote the category</h2><p class="muted">Pick any category · most votes wins · tie = random</p>
+      <div class="vote-cards scrolly">${cardHTML()}</div>
       <p class="muted" style="margin-top:14px">${voted.size}/${N} voted · starting in <b>${t}</b>s</p>`);
     $$("#modal .vcard").forEach(b=>b.onclick=()=>castMe(b.dataset.cat));
   }
-  function finish(){if(done)return;done=true;clearPhase();const mx=Math.max(...keys.map(k=>votes[k]));S.cat=rand(keys.filter(k=>votes[k]===mx));closeModal();toast("Mode: "+CAT_NAME[S.cat]);startMatch();}
+  function finish(){if(done)return;done=true;clearPhase();const mx=Math.max(...keys.map(k=>votes[k]));S.cat=rand(keys.filter(k=>votes[k]===mx));closeModal();toast("Category: "+CAT_NAME[S.cat]);startMatch();}
   function castMe(k){if(done)return;if(myVote)votes[myVote]--;myVote=k;votes[k]++;voted.add(S.me.id);render();if(voted.size>=N)finish();}
   function castBot(id){if(done)return;votes[rand(keys)]++;voted.add(id);if($("#overlay").classList.contains("on"))render();if(voted.size>=N)finish();}
   S.players.filter(p=>p.isBot).forEach(b=>setTimeout(()=>castBot(b.id),(0.6+Math.random()*(VOTE_WAIT-2))*1000));
@@ -1157,7 +1194,7 @@ function beginRound(word){
   clearPhase();
   lockWord(word);
   S.word=word;S.segs=thaiSegs(word);S.revealMask=S.segs.map(s=>s===" ");
-  S.guessedThisRound=new Set();S.guessAt={};S.spam={};S.timeLeft=S.roundTime;S.roundActive=true;
+  S.guessedThisRound=new Set();S.guessAt={};S.spam={};S.timeLeft=S.roundTime;S.roundActive=true;S.hintPhase=0;
   const meDraw=S.drawerId===S.me.id;const drawer=S.players.find(p=>p.id===S.drawerId);
   clearBoard();renderScores();setToolsLocked(!meDraw);resetHourglass();
   if(meDraw){
@@ -1166,7 +1203,7 @@ function beginRound(word){
     $("#guessInput").disabled=true;$("#guessInput").placeholder="You're drawing";
   }else{
     updateHintBar();
-    showCenter(`<div class="big">${esc(drawer.name)} is drawing...</div><div class="word-sub" style="margin-top:6px">${segLen(S.segs)} letters · ${CAT_NAME[S.cat]}</div>`,1400);
+    showCenter(`<div class="big">${esc(drawer.name)} is drawing...</div><div class="word-sub" style="margin-top:6px">Guess from the drawing!</div>`,1400);
     $("#guessInput").disabled=false;$("#guessInput").placeholder="Type your guess...";
     const rn=S.roundNo;setTimeout(()=>{if(S.roundActive&&S.roundNo===rn&&S.drawerId===drawer.id)botAutoDraw();},1500);
   }
@@ -1188,24 +1225,31 @@ function updateHourglass(p){
 function startTimer(){
   clearInterval(S.tickId);const total=S.roundTime;updateHourglass(1);
   const realLetters=segLen(S.segs);
-  const step=Math.max(1,Math.ceil(total/Math.max(2,realLetters-1)));
+  const half=Math.ceil(total/2);                     // count of letters appears at half time
+  const maxReveal=Math.floor(realLetters*0.3);       // never reveal more than 30%
+  const revealStart=Math.ceil(total*0.4);            // start revealing in the last 40%
+  const revealEnd=Math.max(1,Math.ceil(total*0.1));
+  const step=maxReveal>0?Math.max(1,Math.floor((revealStart-revealEnd)/maxReveal)):0;
   S.tickId=setInterval(()=>{
     S.timeLeft--;$("#timeLeft").textContent=Math.max(0,S.timeLeft);
     updateHourglass(S.timeLeft/total);
     $("#timer").classList.toggle("urgent",S.timeLeft<=10);
     if(S.timeLeft<=10&&S.timeLeft>0)sndUrgent(S.timeLeft<=5?2:1);
-    if(S.timeLeft%step===0)revealLetter();
+    if((S.hintPhase||0)<1 && S.timeLeft<=half){S.hintPhase=1;updateHintBar();}    // phase 1: show letter count
+    if((S.hintPhase||0)>=1 && maxReveal>0 && step>0 && S.timeLeft<=revealStart && S.timeLeft>revealEnd && ((revealStart-S.timeLeft)%step===0)) revealLetter(maxReveal);   // phase 2
     if(S.timeLeft<=0)endRound("Time's up");
   },1000);
 }
-function revealLetter(){
+function revealLetter(maxReveal){
+  const revealed=S.revealMask.filter((v,i)=>v&&S.segs[i]!==" ").length;
+  if(maxReveal!=null && revealed>=maxReveal)return;
   const idxs=S.segs.map((s,i)=>i).filter(i=>S.segs[i]!==" "&&!S.revealMask[i]);
-  const total=segLen(S.segs);
-  if(idxs.length<=Math.ceil(total/2))return;
+  if(!idxs.length)return;
   S.revealMask[rand(idxs)]=true;updateHintBar();
 }
 function updateHintBar(){
-  if(S.drawerId===S.me.id){setWordHint(S.segs,null,true);return;}
+  if(S.drawerId===S.me.id){setWordHint(S.segs,null,true);$("#wordSub").textContent="Draw this word for others";return;}
+  if((S.hintPhase||0)<1){ setHintText("•   •   •"); $("#wordSub").textContent=`Guess! · ${CAT_NAME[S.cat]}`; return; }   // phase 0: no hint, no length
   setWordHint(S.segs,S.revealMask,false);
   $("#wordSub").textContent=`${segLen(S.segs)} letters · ${CAT_NAME[S.cat]}`;
 }
@@ -1267,9 +1311,14 @@ function submitGuess(){
 }
 $("#sendGuess").onclick=submitGuess;
 $("#guessInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitGuess();});
-$("#muteBtn").onclick=()=>{_muted=!_muted;$("#muteBtn").textContent=_muted?"🔇":"🔊";if(!_muted)sndTurn();};
+function syncMuteBtns(){const g=$("#muteBtn");if(g)g.textContent=_muted?"🔇":"🔊";const h=$("#muteBtnHome");if(h){h.textContent=(_muted?"🔇 Sound: Off":"🔊 Sound: On");h.classList.toggle("off",_muted);}}
+function toggleMute(){_muted=!_muted;syncMuteBtns();if(!_muted)sndTurn();}
+$("#muteBtn").onclick=toggleMute;
+$("#muteBtnHome").onclick=toggleMute;
 $("#bgmBtn").onclick=toggleBgm;
 $("#bgmBtnLobby").onclick=toggleBgm;
+$("#bgmBtnHome").onclick=toggleBgm;
+$("#bgmNextHome").onclick=cycleBgmTrack;
 function updateCatTag(){const c=CATS.find(x=>x.key===S.cat);if(c&&$("#catTag"))$("#catTag").textContent=`${c.emoji} ${c.name}`;}
 $("#exitBtn").onclick=exitGame;
 function exitGame(){
@@ -1468,7 +1517,12 @@ function netWatch(){
   netRef("strokes").on("child_added",s=>netApplyStroke(s.val()));
   netRef("chat").on("child_added",s=>netApplyChat(s.val()));
   netRef("emotes").on("child_added",s=>{const e=s.val();if(e&&e.id&&e.t&&e.id!==NET.uid)emote(e.id,e.t);});
-  netRef("lobbyChat").on("child_added",s=>{const c=s.val();if(c&&c.id&&c.text&&c.id!==NET.uid)chatBubble(c.id,c.text);});
+  let lcPrimed=false;
+  netRef("lobbyChat").on("value",()=>{lcPrimed=true;});   // fires once after initial history replay
+  netRef("lobbyChat").on("child_added",s=>{const c=s.val();if(!c||!c.text)return;
+    if(c.id!==NET.uid)addLobbyChatLog(c.name,c.text,false);     // history + live (skip own — already logged on send)
+    if(lcPrimed&&c.id!==NET.uid)chatBubble(c.id,c.text);        // bubble only for live messages
+  });
   if(NET.isHost)netRef("guesses").on("child_added",s=>netJudge(s.val(),s.ref));
 }
 function netApplyPlayers(map){
@@ -1617,7 +1671,7 @@ function netNextTurnHost(){
   lockWord(S.word);
   S.segs=thaiSegs(S.word);S.revealMask=S.segs.map(s=>s===" ");
   S.guessedThisRound=new Set();
-  S.timeLeft=S.roundTime;S.roundActive=true;
+  S.timeLeft=S.roundTime;S.roundActive=true;S.hintPhase=0;
   netRef("secret/word").set(S.word);            // hidden — only host & drawer can read (rules)
   netRef("strokes").remove();clearBoard();
   netPushGameHost("","");
@@ -1630,17 +1684,23 @@ function netNextTurnHost(){
 function netTickHost(){
   S.timeLeft--;
   const tot=S.roundTime,t=S.timeLeft;
-  if(t===Math.floor(tot*0.6)||t===Math.floor(tot*0.35)||t===Math.floor(tot*0.15))netRevealOneHost();
+  const half=Math.ceil(tot/2), maxReveal=Math.floor(segLen(S.segs)*0.3);
+  const revealStart=Math.ceil(tot*0.4), revealEnd=Math.max(1,Math.ceil(tot*0.1));
+  const step=maxReveal>0?Math.max(1,Math.floor((revealStart-revealEnd)/maxReveal)):0;
+  if((S.hintPhase||0)<1 && t<=half){S.hintPhase=1;}                                                    // phase 1: show letter count
+  if((S.hintPhase||0)>=1 && maxReveal>0 && step>0 && t<=revealStart && t>revealEnd && ((revealStart-t)%step===0)) netRevealOneHost(maxReveal);   // phase 2: reveal ≤30%
   if(t<=10&&t>0)sndUrgent(t<=5?2:1);
   netPushGameHost("","");
   if(S.timeLeft<=0)netEndRoundHost("Time's up!");
 }
-function netRevealOneHost(){
+function netRevealOneHost(maxReveal){
+  const revealed=S.revealMask.filter((on,i)=>on&&S.segs[i]!==" ").length;
+  if(maxReveal!=null && revealed>=maxReveal)return;
   const hidden=[];S.revealMask.forEach((on,i)=>{if(!on&&S.segs[i]!==" ")hidden.push(i);});
-  if(hidden.length<=1)return;
+  if(!hidden.length)return;
   S.revealMask[hidden[Math.floor(Math.random()*hidden.length)]]=true;
 }
-function netMaskHost(){ return S.segs.map((s,i)=>s===" "?"/":(S.revealMask[i]?s:maskCluster(s))).join(" "); }
+function netMaskHost(){ if((S.hintPhase||0)<1) return ""; return S.segs.map((s,i)=>s===" "?"/":(S.revealMask[i]?s:maskCluster(s))).join(" "); }
 function netPushGameHost(reason,answer){
   const solved={};S.guessedThisRound.forEach(id=>solved[id]=true);
   const g={phase:"playing",roundNo:S.roundNo,totalRounds:S.totalRounds,cat:S.cat,drawerId:S.drawerId,mask:netMaskHost(),timeLeft:S.timeLeft,reason:reason||"",answer:answer||"",solved};
@@ -1732,7 +1792,9 @@ function netApplyGame(g){
     } else if(S.word){ setWordHint(thaiSegs(S.word),null,true); }
   } else {
     if(!NET.isHost)S.word="";
-    setMaskHint(g.mask||"");
+    const mk=g.mask||"";
+    if(!mk){ setHintText("•   •   •"); $("#wordSub").textContent=`Guess! · ${CAT_NAME[g.cat||S.cat]}`; }
+    else { setMaskHint(mk); const n=mk.split(" ").filter(t=>t&&t!=="/").length; $("#wordSub").textContent=`${n} letters · ${CAT_NAME[g.cat||S.cat]}`; }
   }
   setToolsLocked(!amDrawer);$("#guessInput").disabled=amDrawer;
   renderScores();
