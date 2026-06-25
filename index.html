@@ -9,8 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Itim&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F6F1E6; --surface:#FFFCF6; --surface-2:#F1E9DA;
-  --ink:#4A3F35; --ink-soft:#9C8E7E; --line:#EADFCE;
+  --bg:#FAF3D6; --surface:#FFFBEA; --surface-2:#F6ECC8;
+  --ink:#4A4030; --ink-soft:#9C8E6E; --line:#ECE0B8;
   --accent:#E0884A; --accent-soft:#FBEBD9; --accent-ink:#B9652C;
   --good:#7FA88A; --good-soft:#E8F0E7; --hot:#D9685F; --warn:#E0A23D;
   --wood:#B98A5E; --sand:#E7B86A;
@@ -23,7 +23,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font-family:var(--body);color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow:hidden;
-  background-image:radial-gradient(circle at 14% 16%, #FBEEDD 0, transparent 42%),radial-gradient(circle at 86% 88%, #EFEFDF 0, transparent 44%);}
+  background-image:radial-gradient(circle at 14% 16%, #FDF4C4 0, transparent 42%),radial-gradient(circle at 86% 88%, #F4EDBE 0, transparent 44%);}
 button{font-family:var(--body);cursor:pointer;border:none;background:none}
 button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:9px}
 input{font-family:var(--body)}
@@ -101,9 +101,9 @@ h1,h2,h3{margin:0;font-weight:600}
 .topbar{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 16px;box-shadow:var(--shadow)}
 .round-tag{font-size:13px;color:var(--ink-soft);font-weight:600}
 .word-area{flex:1;text-align:center;min-width:0}
-.word-hint{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:7px;font-family:var(--disp);font-size:25px;line-height:1.4;min-height:1.75em;padding:3px 0 2px;color:var(--ink);overflow:visible}
-.word-hint .ws{min-width:15px;text-align:center;border-bottom:2.5px solid var(--ink-soft);padding:0 3px 4px;box-sizing:border-box}
-.word-hint .ws.on{border-bottom-color:var(--accent)}
+.word-hint{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:7px;font-family:var(--disp);font-size:25px;line-height:1.5;min-height:1.9em;padding:8px 0 2px;color:var(--ink);overflow:visible}
+.word-hint .ws{min-width:16px;text-align:center;border-bottom:2.5px solid var(--ink-soft);padding:2px 3px 4px;box-sizing:border-box;color:var(--ink-soft);line-height:1.45}
+.word-hint .ws.on{border-bottom-color:var(--accent);color:var(--ink)}
 .word-hint .hgap{width:15px;height:1px}
 .word-sub{font-size:12px;color:var(--ink-soft)}
 .timer{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-size:25px;min-width:70px;justify-content:flex-end;color:var(--ink)}
@@ -277,6 +277,20 @@ h1,h2,h3{margin:0;font-weight:600}
 .emo-bubble::after{content:"";position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #fff}
 .emo-bubble svg{width:90%;height:90%}
 .emo-bubble.pop{animation:emopop .16s ease-out}
+/* crown / pig icon floating above the head */
+.seat .head-badge{position:absolute;top:-16px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none}
+.head-badge .hb{font-size:30px;line-height:1;display:inline-block;position:relative;filter:drop-shadow(0 2px 3px rgba(74,63,53,.3))}
+.head-badge .hb .xn{position:absolute;right:-13px;bottom:-3px;font-family:var(--disp);font-size:13px;color:#fff;background:var(--accent);border-radius:9px;padding:0 4px;box-shadow:var(--shadow)}
+.ava-wrap{position:relative;flex:0 0 auto;line-height:0}
+.ava-badge{position:absolute;top:-9px;left:-7px;font-size:15px;z-index:3;filter:drop-shadow(0 1px 1px rgba(74,63,53,.3))}
+.ava-badge b{font-family:var(--disp);font-size:9px;color:#fff;background:var(--accent);border-radius:6px;padding:0 2px;margin-left:-2px}
+/* chat bubble above the head (lobby chat) */
+.chat-bubble{position:absolute;left:50%;top:-32px;transform:translateX(-50%);max-width:130px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:4px 9px;font-size:12px;font-weight:600;color:var(--ink);box-shadow:0 3px 8px rgba(74,63,53,.22);z-index:8;pointer-events:none;text-align:center;line-height:1.25;word-break:break-word}
+.chat-bubble::after{content:"";position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #fff}
+.chat-bubble.pop{animation:emopop .16s ease-out}
+/* lobby chat box */
+.lobbychat{display:flex;gap:7px;margin-top:10px}
+.lobbychat .field{padding:10px 12px}
 @keyframes emopop{0%{transform:translateX(-50%) scale(.4)}60%{transform:translateX(-50%) scale(1.18)}100%{transform:translateX(-50%) scale(1)}}
 @keyframes floatup{0%{opacity:0;transform:translate(-50%,6px) scale(.5)}25%{opacity:1;transform:translate(-50%,-14px) scale(1.15)}100%{opacity:0;transform:translate(-50%,-66px) scale(1)}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.001s!important;transition-duration:.05s!important}}
@@ -334,6 +348,7 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="ready-row"><span class="muted"><b id="readyCount">0</b>/<span id="readyTot">1</span> ready</span><button id="readyBtn" class="btn sm">I'm ready ✓</button></div>
       <button id="startGame" class="btn primary" style="width:100%;margin-top:12px;font-size:18px;padding:15px">Start game 🎨</button>
       <button id="addBotBtn" class="btn sm" style="width:100%;margin-top:8px;display:none">+ Add a bot 🤖</button>
+      <div class="lobbychat"><input id="lobbyChatInput" class="field" placeholder="Say something to the room..." maxlength="60"><button id="lobbyChatSend" class="btn primary sm">Send</button></div>
       <button id="leaveLobby" class="btn ghost" style="width:100%;margin-top:8px">Leave room</button>
     </div>
   </div>
@@ -679,17 +694,24 @@ function thaiSegs(w){
   return out;
 }
 function segLen(segs){return segs.filter(s=>s!==" ").length;}
-function _hintSlot(txt,on){const sp=document.createElement("span");sp.className="ws"+(on?" on":"");sp.textContent=on?txt:"";return sp;}
+/* mask a Thai cluster: hide only the CONSONANT (◌ placeholder), keep tone marks & vowels (above/below/before/after) visible */
+function maskCluster(s){return (s||"").replace(/[\u0E01-\u0E2E]/g,"\u25CC");}
+function clusterOpen(s){return !/\u25CC/.test(s);}   // a token with no ◌ is fully revealed
+function _hintSlot(txt,on){const sp=document.createElement("span");sp.className="ws"+(on?" on":"");sp.textContent=txt;return sp;}
 function _hintGap(){const g=document.createElement("span");g.className="hgap";return g;}
 /* render from clusters + per-cluster reveal flags (host / offline / drawer) */
 function setWordHint(segs,reveal,showAll){
   const el=$("#wordHint");if(!el)return;el.innerHTML="";
-  segs.forEach((seg,i)=>{ if(seg===" ")el.appendChild(_hintGap()); else el.appendChild(_hintSlot(seg, showAll|| (reveal&&reveal[i]) )); });
+  segs.forEach((seg,i)=>{
+    if(seg===" "){el.appendChild(_hintGap());return;}
+    const open=showAll||(reveal&&reveal[i]);
+    el.appendChild(_hintSlot(open?seg:maskCluster(seg), open));
+  });
 }
-/* render from a mask token string "ก่ _ _ / _ _" (clients) */
+/* render from a mask token string "ก่ ◌ ◌ / ◌ู ◌" (clients) */
 function setMaskHint(maskStr){
   const el=$("#wordHint");if(!el)return;el.innerHTML="";
-  (maskStr||"").split(" ").forEach(tk=>{ if(tk===""||tk==="/")el.appendChild(_hintGap()); else el.appendChild(_hintSlot(tk, tk!=="_")); });
+  (maskStr||"").split(" ").forEach(tk=>{ if(tk===""||tk==="/")el.appendChild(_hintGap()); else el.appendChild(_hintSlot(tk, clusterOpen(tk))); });
 }
 function setHintText(t){const el=$("#wordHint");if(el){el.innerHTML="";el.textContent=t;}}
 
@@ -798,6 +820,20 @@ function emote(id,t){
   b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop");   // restart pop -> flicker on rapid taps
   clearTimeout(b._t);b._t=setTimeout(()=>{if(b)b.remove();},5000);       // hold 5s
 }
+function chatBubble(id,text){
+  const seat=document.querySelector('#seats [data-pid="'+(window.CSS&&CSS.escape?CSS.escape(id):id)+'"]');
+  if(!seat)return;
+  let b=seat.querySelector(".chat-bubble");
+  if(!b){b=document.createElement("div");b.className="chat-bubble";seat.appendChild(b);}
+  b.textContent=text;
+  b.classList.remove("pop");void b.offsetWidth;b.classList.add("pop");
+  clearTimeout(b._t);b._t=setTimeout(()=>{if(b)b.remove();},5500);       // auto-hide
+}
+function sendLobbyChat(){
+  const inp=$("#lobbyChatInput");if(!inp)return;const v=inp.value.trim();if(!v)return;inp.value="";
+  chatBubble(S.me.id,v);
+  if(NET.online)netRef("lobbyChat").push({id:NET.uid,name:S.me.name||"Player",text:v,at:firebase.database.ServerValue.TIMESTAMP});
+}
 function startLobbyLife(){
   clearInterval(S.lobbyTimer);
   S.lobbyTimer=setInterval(()=>{
@@ -831,8 +867,8 @@ function renderLobby(){
     el.dataset.pid=p.id;
     el.className="seat"+(isMe?" me":"")+(!isMe&&!p.isHost?" kickable":"");
     el.style.left=pos[0]+"%";el.style.top=pos[1]+"%";
-    el.innerHTML=`<div class="seat-fig">${animalFigure(charOf(p))}</div>
-      <div class="seat-name">${esc(p.name)}${crown(p)}${pigHat(p)}</div>
+    el.innerHTML=`${headBadgeHTML(p)}<div class="seat-fig">${animalFigure(charOf(p))}</div>
+      <div class="seat-name">${esc(p.name)}</div>
       ${p.isHost?'<span class="htag">HOST</span>':''}
       <span class="seat-badge ${p.ready?'ready':'wait'}">${p.ready?'✓':'…'}</span>`;
     if(!isMe&&!p.isHost)el.onclick=()=>voteKick(p);
@@ -850,10 +886,25 @@ function renderLobby(){
   $("#addBotBtn").style.display=(NET.online&&isHost)?"":"none";
 }
 S.champWins={};S.pigHats={};
-function maxIds(w){w=w||{};let mx=0;Object.keys(w).forEach(k=>{if(w[k]>mx)mx=w[k];});if(mx<=0)return new Set();return new Set(Object.keys(w).filter(k=>w[k]===mx));}
-function champIds(){return maxIds(S.champWins);}
-function crown(p){return champIds().has(p.id)?'<span class="crown"> 👑</span>':'';}
-function pigHat(p){return maxIds(S.pigHats).has(p.id)?'<span class="crown"> 🐷</span>':'';}
+function crownCount(p){return S.champWins[p.id]||0;}
+function pigCount(p){return S.pigHats[p.id]||0;}
+/* award: 1st place gains a crown & loses any pig; last place gains a pig & loses any crown */
+function awardCrown(id){S.champWins[id]=(S.champWins[id]||0)+1;S.pigHats[id]=0;}
+function awardPig(id){S.pigHats[id]=(S.pigHats[id]||0)+1;S.champWins[id]=0;}
+/* floating icon above the character's head (lobby) */
+function headBadgeHTML(p){
+  const c=crownCount(p),g=pigCount(p);
+  if(c>0)return `<div class="head-badge"><span class="hb">👑${c>1?`<span class="xn">x${c}</span>`:''}</span></div>`;
+  if(g>0)return `<div class="head-badge"><span class="hb">🐷${g>1?`<span class="xn">x${g}</span>`:''}</span></div>`;
+  return "";
+}
+/* small badge over the scoreboard avatar */
+function avaBadgeHTML(p){
+  const c=crownCount(p),g=pigCount(p);
+  if(c>0)return `<span class="ava-badge">👑${c>1?`<b>x${c}</b>`:''}</span>`;
+  if(g>0)return `<span class="ava-badge">🐷${g>1?`<b>x${g}</b>`:''}</span>`;
+  return "";
+}
 function buildCats(){
   const grid=$("#catPick");if(grid.children.length)return;
   CATS.forEach(c=>{
@@ -912,6 +963,8 @@ function voteKick(p){
 /* =================== START GAME =================== */
 $("#startGame").onclick=()=>{ if(NET.online){ if(NET.isHost)netStartGame(); else toast("Waiting for the host to start"); return; } modeVotePre(); };
 $("#addBotBtn").onclick=netAddBot;
+$("#lobbyChatSend").onclick=sendLobbyChat;
+$("#lobbyChatInput").addEventListener("keydown",e=>{if(e.key==="Enter")sendLobbyChat();});
 function startMatch(){
   clearInterval(S.lobbyTimer);
   S.players.forEach(p=>p.score=0);
@@ -1266,14 +1319,13 @@ function endGame(){
   const maxS=ranked[0].score, minS=ranked[ranked.length-1].score;
   const winners=ranked.filter(p=>p.score===maxS);
   const losers=ranked.filter(p=>p.score===minS);
-  winners.forEach(p=>S.champWins[p.id]=(S.champWins[p.id]||0)+1);   // crown (ties stack)
-  losers.forEach(p=>S.pigHats[p.id]=(S.pigHats[p.id]||0)+1);        // pig hat (ties stack)
+  winners.forEach(p=>awardCrown(p.id));   // 1st: +crown, clears pig
+  losers.forEach(p=>awardPig(p.id));      // last: +pig, clears crown
   sndWin();
   const pod=[ranked[1],ranked[0],ranked[2]],podClass=["p2","p1","p3"],rankNo=[2,1,3];
   let podium="";pod.forEach((p,i)=>{if(!p)return;podium+=`<div class="pod ${podClass[i]}">${avaHTML(p)}<div class="nm">${esc(p.name)}</div><div class="ptl">${p.score}</div><div class="bar">${rankNo[i]}</div></div>`;});
   const list=ranked.map((p,i)=>{
-    const badge=(p.score===maxS?'👑':'')+(p.score===minS?'🐷':'');
-    return `<div class="frow ${p.score===maxS?'win':''}"><div class="rk">${badge||(["🥇","🥈","🥉"][i]||('#'+(i+1)))}</div>${avaHTML(p)}<span class="pname">${esc(p.name)}</span><span class="pts">${p.score} · 🏆${S.champWins[p.id]||0} 🐷${S.pigHats[p.id]||0}</span></div>`;
+    return `<div class="frow ${p.score===maxS?'win':''}"><div class="rk">${["🥇","🥈","🥉"][i]||('#'+(i+1))}</div><span class="ava-wrap">${avaHTML(p)}${avaBadgeHTML(p)}</span><span class="pname">${esc(p.name)}</span><span class="pts">${p.score}</span></div>`;
   }).join("");
   const title=winners.length>1?`${winners.length}-way tie!`:`👑 ${esc(winners[0].name)} wins!`;
   openModal(`<h2 class="disp">${title}</h2><p class="muted">Most points after ${S.totalRounds} rounds · ${CAT_NAME[S.cat]}</p>
@@ -1299,7 +1351,7 @@ function renderScores(){
   sorted.forEach(p=>{
     const row=document.createElement("div");
     row.className="srow"+(S.guessedThisRound&&S.guessedThisRound.has(p.id)?" solved":"")+(p.id===S.drawerId?" draw":"");
-    row.innerHTML=`${avaHTML(p)}<span class="nm">${esc(p.name)}${crown(p)}${pigHat(p)}${p.id===S.me.id?' (you)':''}</span>
+    row.innerHTML=`<span class="ava-wrap">${avaHTML(p)}${avaBadgeHTML(p)}</span><span class="nm">${esc(p.name)}${p.id===S.me.id?' (you)':''}</span>
       ${p.id===S.drawerId?'<span class="mini">✏️</span>':''}<span class="pts">${p.score}</span>`;
     if(p.id!==S.me.id&&p.id!==S.drawerId){const k=document.createElement("button");k.className="skick";k.textContent="kick";k.title="Vote kick";k.onclick=()=>voteKick(p);row.appendChild(k);}
     list.appendChild(row);
@@ -1416,6 +1468,7 @@ function netWatch(){
   netRef("strokes").on("child_added",s=>netApplyStroke(s.val()));
   netRef("chat").on("child_added",s=>netApplyChat(s.val()));
   netRef("emotes").on("child_added",s=>{const e=s.val();if(e&&e.id&&e.t&&e.id!==NET.uid)emote(e.id,e.t);});
+  netRef("lobbyChat").on("child_added",s=>{const c=s.val();if(c&&c.id&&c.text&&c.id!==NET.uid)chatBubble(c.id,c.text);});
   if(NET.isHost)netRef("guesses").on("child_added",s=>netJudge(s.val(),s.ref));
 }
 function netApplyPlayers(map){
@@ -1423,6 +1476,7 @@ function netApplyPlayers(map){
   const arr=Object.keys(map).map(uid=>({id:uid,name:map[uid].name||"Player",charId:map[uid].charId||0,ready:!!map[uid].ready,isHost:!!map[uid].isHost,isBot:!!map[uid].isBot,skill:map[uid].skill||0.5,score:map[uid].score||0,joined:map[uid].joined||0}));
   arr.sort((a,b)=>a.joined-b.joined);
   S.players=arr;
+  Object.keys(map).forEach(uid=>{ S.champWins[uid]=map[uid].crown||0; S.pigHats[uid]=map[uid].pig||0; });   // synced crown/pig stats
   netMaybeElect();
   // host: if current drawer left mid-round, skip to next turn
   if(NET.isHost&&S.roundActive&&S.drawerId&&!map[S.drawerId])netEndRoundHost("Drawer left");
@@ -1473,7 +1527,7 @@ async function netResumeHostIfPlaying(){
   S.guessedThisRound=new Set(Object.keys(gs.solved||{}));
   S.roundActive=!gs.reason;
   try{ const w=(await netRef("secret/word").get()).val(); if(w)S.word=w; }catch(e){}
-  if(S.word){ S.segs=thaiSegs(S.word); const m=(gs.mask||"").split(" "); S.revealMask=S.segs.map((s,i)=> s===" " || (m[i]&&m[i]!=="_"&&m[i]!=="/") ); }
+  if(S.word){ S.segs=thaiSegs(S.word); const m=(gs.mask||"").split(" "); S.revealMask=S.segs.map((s,i)=> s===" " || (m[i]&&m[i]!=="/"&&!m[i].includes("\u25CC")) ); }
   clearInterval(S.tickId);
   if(!S.players.find(p=>p.id===S.drawerId))return netEndRoundHost("Drawer left");
   if(S.roundActive&&S.timeLeft>0)S.tickId=setInterval(netTickHost,1000);
@@ -1586,7 +1640,7 @@ function netRevealOneHost(){
   if(hidden.length<=1)return;
   S.revealMask[hidden[Math.floor(Math.random()*hidden.length)]]=true;
 }
-function netMaskHost(){ return S.segs.map((s,i)=>s===" "?"/":(S.revealMask[i]?s:"_")).join(" "); }
+function netMaskHost(){ return S.segs.map((s,i)=>s===" "?"/":(S.revealMask[i]?s:maskCluster(s))).join(" "); }
 function netPushGameHost(reason,answer){
   const solved={};S.guessedThisRound.forEach(id=>solved[id]=true);
   const g={phase:"playing",roundNo:S.roundNo,totalRounds:S.totalRounds,cat:S.cat,drawerId:S.drawerId,mask:netMaskHost(),timeLeft:S.timeLeft,reason:reason||"",answer:answer||"",solved};
@@ -1604,6 +1658,9 @@ function netEndGameHost(){
   const maxS=ranked[0]?ranked[0].score:0,minS=ranked.length?ranked[ranked.length-1].score:0;
   const winners=ranked.filter(p=>p.score===maxS).map(p=>p.id);
   const losers=ranked.filter(p=>p.score===minS).map(p=>p.id);
+  winners.forEach(id=>awardCrown(id));   // +crown, clears pig
+  losers.forEach(id=>awardPig(id));      // +pig, clears crown
+  S.players.forEach(p=>{ netRef("players/"+p.id+"/crown").set(S.champWins[p.id]||0); netRef("players/"+p.id+"/pig").set(S.pigHats[p.id]||0); });  // sync stats to everyone
   const scores={};S.players.forEach(p=>scores[p.id]=p.score);
   netRef("game").set({phase:"ended",winners,losers,scores,totalRounds:S.totalRounds,cat:S.cat});
   netShowEnd({winners,losers,scores});
@@ -1675,7 +1732,7 @@ function netApplyGame(g){
     } else if(S.word){ setWordHint(thaiSegs(S.word),null,true); }
   } else {
     if(!NET.isHost)S.word="";
-    setMaskHint(g.mask||"_");
+    setMaskHint(g.mask||"");
   }
   setToolsLocked(!amDrawer);$("#guessInput").disabled=amDrawer;
   renderScores();
@@ -1686,9 +1743,8 @@ function netShowEnd(g){
   clearInterval(S.tickId);clearPhase();
   if(g.scores)S.players.forEach(p=>{if(g.scores[p.id]!=null)p.score=g.scores[p.id];});
   const win=new Set(g.winners||[]),lose=new Set(g.losers||[]);
-  if(NET.isHost){win.forEach(id=>S.champWins[id]=(S.champWins[id]||0)+1);lose.forEach(id=>S.pigHats[id]=(S.pigHats[id]||0)+1);}
   const ranked=[...S.players].sort((a,b)=>b.score-a.score);
-  const list=ranked.map((p,i)=>{const badge=(win.has(p.id)?'👑':'')+(lose.has(p.id)?'🐷':'');return `<div class="frow ${win.has(p.id)?'win':''}"><div class="rk">${badge||(["🥇","🥈","🥉"][i]||('#'+(i+1)))}</div>${avaHTML(p)}<span class="pname">${esc(p.name)}</span><span class="pts">${p.score}</span></div>`;}).join("");
+  const list=ranked.map((p,i)=>`<div class="frow ${win.has(p.id)?'win':''}"><div class="rk">${["🥇","🥈","🥉"][i]||('#'+(i+1))}</div><span class="ava-wrap">${avaHTML(p)}${avaBadgeHTML(p)}</span><span class="pname">${esc(p.name)}</span><span class="pts">${p.score}</span></div>`).join("");
   const wname=ranked.filter(p=>win.has(p.id)).map(p=>esc(p.name)).join(" & ");
   const ctrl=NET.isHost
     ? `<div class="row"><button class="btn primary" id="againBtn" style="flex:1">Play again 🎲</button><button class="btn" id="backLobby" style="flex:1">Return to lobby</button></div>`
