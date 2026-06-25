@@ -329,8 +329,8 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="room-link"><input id="roomPass" class="field" placeholder="Set a password..."><button id="lockBtn" class="btn sm">🔓</button></div>
       <p class="label" style="margin-top:14px">Default category</p>
       <div class="cats" id="catPick"></div>
-      <div class="opt-row"><div class="label" style="margin:0">Time per round</div><div class="stepper"><button data-step="time" data-d="-1">−</button><b id="timeVal">60</b><button data-step="time" data-d="1">+</button></div></div>
-      <div class="opt-row" style="margin-top:8px"><div class="label" style="margin:0">Total rounds (10–40)</div><div class="stepper"><button data-step="rounds" data-d="-1">−</button><b id="roundsValL">20</b><button data-step="rounds" data-d="1">+</button></div></div>
+      <div class="opt-row"><div class="label" style="margin:0">Time per round</div><div class="stepper"><button data-step="time" data-d="-1">−</button><b id="timeVal">50</b><button data-step="time" data-d="1">+</button></div></div>
+      <div class="opt-row" style="margin-top:8px"><div class="label" style="margin:0">Total rounds (5–30)</div><div class="stepper"><button data-step="rounds" data-d="-1">−</button><b id="roundsValL">10</b><button data-step="rounds" data-d="1">+</button></div></div>
       <div class="ready-row"><span class="muted"><b id="readyCount">0</b>/<span id="readyTot">1</span> ready</span><button id="readyBtn" class="btn sm">I'm ready ✓</button></div>
       <button id="startGame" class="btn primary" style="width:100%;margin-top:12px;font-size:18px;padding:15px">Start game 🎨</button>
       <button id="addBotBtn" class="btn sm" style="width:100%;margin-top:8px;display:none">+ Add a bot 🤖</button>
@@ -439,29 +439,54 @@ const CATS=[
  {key:"verbs",emoji:"🏃",name:"กิริยา"}
 ];
 const WORDS={
-  places:["บ้านสองชั้น","โรงเรียน","โรงพยาบาล","สนามบิน","สถานีรถไฟ","ตลาดนัด","ห้างสรรพสินค้า","สวนสาธารณะ","ชายหาด","น้ำตก","ภูเขาไฟ","ทะเลทราย","ป่าดงดิบ","วัด","โบสถ์","ปราสาท","สนามกีฬา","สวนสนุก","สวนสัตว์","พิพิธภัณฑ์","ห้องสมุด","ร้านกาแฟ","ปั๊มน้ำมัน","สะพานแขวน","ประภาคาร","ฟาร์มวัว","เกาะกลางทะเล","ถ้ำหินงอก","น้ำพุกลางเมือง","สนามบาส","สนามบินอวกาศ","หอคอยสูง"],
-  people:["ทารกน้อย","เด็กนักเรียน","วัยรุ่น","คุณยาย","คุณตา","เจ้าสาว","เจ้าบ่าว","นักโทษ","ราชา","ราชินี","เจ้าหญิง","อัศวิน","โจรสลัด","แม่มด","ตัวตลก","ยักษ์","นางฟ้า","ผีดิบ","มนุษย์ต่างดาว","ซูเปอร์ฮีโร่","นักมวย","นักเต้น","นักสำรวจ","แฝดสาม","คนแคระ","ฤๅษี","นักดนตรีข้างถนน","ยามเฝ้าประตู","คุณหมอใจดี","คุณครูดุ"],
-  professions:["ครูศิลปะ","ครูพละ","หมอผี","หมอศัลยกรรม","หมอฟัน","สัตวแพทย์","นักบินขับไล่","นักดับเพลิงป่า","ตำรวจสืบสวน","นักดำน้ำกู้ภัย","เชฟขนมหวาน","บาริสต้า","ช่างสักลาย","นักจัดดอกไม้","นักโบราณคดี","นักธรณีวิทยา","นักบินอวกาศ","วิศวกรหุ่นยนต์","สถาปนิกภายใน","นักออกแบบเกม","ผู้ตัดต่อหนัง","นักพากย์การ์ตูน","ผู้ฝึกสิงโต","นักไต่เขา","ชาวสวนองุ่น","คนเลี้ยงผึ้ง","ช่างทำขนมปัง","ครูสอนโยคะ","ผู้ประกาศข่าว","นักดนตรีวงออเคสตรา"],
-  animals:["ปลาทอง","ปลาทู","ปลาดุก","ปลาการ์ตูน","ฉลามขาว","ม้าน้ำ","ปลาหมึกยักษ์","แมงกะพรุน","เต่าทะเล","กระต่ายป่า","กระรอกบิน","เม่นแคระ","ค้างคาวผลไม้","นกฮูก","นกยูง","นกแก้วมาคอว์","เพนกวินจักรพรรดิ","นกกระจอกเทศ","หมีแพนด้า","หมีขั้วโลก","โคอาลา","จิงโจ้แดง","เสือดาวหิมะ","เสือโคร่ง","สิงโตทะเล","ยีราฟ","ม้าลาย","แรดขาว","ฮิปโป","จระเข้","กิ้งก่าคาเมเลียน","งูเห่า","ตัวนิ่ม","ตุ่นปากเป็ด","นกฟลามิงโก","แมวน้ำ"],
-  food:["ข้าวผัดกะเพรา","ข้าวมันไก่","ข้าวหมูแดง","ก๋วยเตี๋ยวเรือ","ผัดไทยกุ้งสด","ส้มตำไทย","ต้มยำกุ้ง","แกงเขียวหวานไก่","ข้าวซอย","หมูกระทะ","ซูชิแซลมอน","ราเมงต้นเปย","สปาเกตตีคาโบนารา","พิซซ่าฮาวายเอี้ยน","แฮมเบอร์เกอร์","ไก่ทอด","สเต็กเนื้อ","ทาโก้","ข้าวเหนียวมะม่วง","บัวลอยไข่หวาน","ไอศกรีมกะทิ","ชานมไข่มุก","กาแฟลาเต้","น้ำมะนาว","ทุเรียนหมอนทอง","มะม่วงน้ำดอกไม้","แตงโม","สับปะรด","โดนัทช็อกโกแลต","ครัวซองต์","มาการอง","ขนมครก","ลูกชิ้นปิ้ง","ไข่เจียวฟู","ข้าวไข่ข้น"],
-  vehicles:["รถเก๋ง","รถกระบะ","รถบรรทุก","รถบัสสองชั้น","รถตู้","รถจักรยานยนต์","จักรยานเสือภูเขา","รถสามล้อ","รถตุ๊กตุ๊ก","เรือใบ","เรือยอชต์","เรือดำน้ำ","เรือสำราญ","เรือแคนู","เครื่องบินโดยสาร","เฮลิคอปเตอร์","จรวด","บอลลูนลมร้อน","เครื่องร่อน","รถไฟหัวจรวด","รถไฟฟ้า","รถไฟใต้ดิน","รถราง","รถดับเพลิง","รถพยาบาล","รถตำรวจ","รถขุดดิน","รถเครน","รถถัง","สกูตเตอร์ไฟฟ้า"],
-  sports:["ฟุตบอล","บาสเกตบอล","วอลเลย์บอล","เทนนิส","แบดมินตัน","ปิงปอง","กอล์ฟ","ว่ายน้ำ","มวยไทย","เทควันโด","ยูโด","ยกน้ำหนัก","วิ่งมาราธอน","ปั่นจักรยาน","สเก็ตน้ำแข็ง","เล่นสกี","เซิร์ฟบอร์ด","ปีนหน้าผา","ยิงธนู","รักบี้","เบสบอล","ฮอกกี้น้ำแข็ง","ขี่ม้า","ฟันดาบ","โบว์ลิ่ง","สนุกเกอร์","เซปักตะกร้อ","พายเรือคายัค","ยิมนาสติก","กระโดดร่ม","ดำน้ำลึก","สเก็ตบอร์ด","ปาเป้า","กระโดดเชือก"],
-  school:["ห้องเรียน","กระดานดำ","โต๊ะเรียน","สมุดการบ้าน","ดินสอ","ยางลบ","ไม้บรรทัด","กระเป๋านักเรียน","ชุดนักเรียน","ครูประจำชั้น","การบ้าน","ข้อสอบ","สอบปลายภาค","เกรดเอ","ระฆังโรงเรียน","โรงอาหาร","สนามเด็กเล่น","ห้องสมุด","ห้องวิทยาศาสตร์","ลูกโลกจำลอง","แผนที่โลก","กล้องจุลทรรศน์","เครื่องคิดเลข","สีเทียน","พู่กัน","เข้าแถวหน้าเสาธง","ปิดเทอม","เพื่อนร่วมชั้น","หัวหน้าห้อง","สมุดพก","กล่องดินสอ","นาฬิกาในห้องเรียน"],
-  office:["ห้องประชุม","คอมพิวเตอร์","แล็ปท็อป","กองเอกสาร","เครื่องถ่ายเอกสาร","เครื่องพิมพ์","โทรศัพท์ตั้งโต๊ะ","อีเมล","นามบัตร","กาแฟตอนเช้า","โต๊ะทำงาน","เก้าอี้หมุน","ตู้เก็บเอกสาร","ปฏิทินตั้งโต๊ะ","เครื่องตอกบัตร","ใบลางาน","ประชุมออนไลน์","พรีเซนต์งาน","กราฟยอดขาย","ที่เย็บกระดาษ","คลิปหนีบกระดาษ","ปากกาไฮไลต์","กระดาษโน้ตสี","หัวหน้าแผนก","ทำโอที","เดดไลน์","สัญญาจ้าง","ซองเงินเดือน","ห้องพักผ่อน","ไวท์บอร์ด"],
-  clothing:["เสื้อยืด","เสื้อเชิ้ต","เสื้อกันหนาว","เสื้อฮู้ด","แจ็คเก็ตหนัง","กางเกงยีนส์","กางเกงขาสั้น","กระโปรงบาน","ชุดเดรส","สูทผูกไท","ชุดว่ายน้ำ","ชุดกิโมโน","ผ้าพันคอ","หมวกแก๊ป","หมวกปีกกว้าง","ถุงเท้าลาย","รองเท้าผ้าใบ","รองเท้าบูท","รองเท้าส้นสูง","เนคไท","หูกระต่าย","ถุงมือ","แว่นกันแดด","เข็มขัด","นาฬิกาข้อมือ","กระเป๋าถือ","เป้สะพายหลัง","ชุดนอน","ชุดเจ้าสาว","เสื้อกล้าม"],
-  tech:["สมาร์ทโฟน","แท็บเล็ต","แล็ปท็อป","สมาร์ทวอทช์","หูฟังไร้สาย","กล้องวงจรปิด","โดรนบินถ่ายภาพ","หุ่นยนต์ดูดฝุ่น","เครื่องพิมพ์สามมิติ","แว่นวีอาร์","เมาส์","คีย์บอร์ด","จอมอนิเตอร์","ฮาร์ดดิสก์","แฟลชไดรฟ์","เราเตอร์","แบตสำรอง","ที่ชาร์จไร้สาย","ลำโพงบลูทูธ","กล้องถ่ายรูป","เครื่องเล่นเกม","จอยเกม","รถยนต์ไฟฟ้า","ดาวเทียม","ปัญญาประดิษฐ์","คิวอาร์โค้ด","สแกนลายนิ้วมือ","เครื่องอ่านบาร์โค้ด","เซิร์ฟเวอร์","ชิปประมวลผล"],
-  gaming:["นักรบดาบ","บอสใหญ่","ดันเจี้ยน","เลเวลอัป","ไอเทมหายาก","ดาบวิเศษ","โล่กันกระแทก","หลอดพลังชีวิต","คาถาเวทมนตร์","นักธนู","อัศวินเกราะ","มังกรไฟ","หีบสมบัติ","กุญแจทอง","แผนที่ขุมทรัพย์","ปราสาทศัตรู","ด่านสุดท้าย","ยาฟื้นพลัง","คริสตัลพลัง","พอร์ทัลมิติ","สัตว์เลี้ยงในเกม","กิลด์นักผจญภัย","ผู้เล่นใหม่","จุดรีสปอน","จอยสติ๊ก","สกอร์สูงสุด","เกราะเหล็ก","คฑาเวท","มอนสเตอร์","เพชรพลังลับ"],
-  entertainment:["โรงหนัง","ป๊อปคอร์น","ไมโครโฟน","กีตาร์ไฟฟ้า","กลองชุด","เปียโน","ดีเจเปิดเพลง","พรมแดง","รางวัลออสการ์","ตัวการ์ตูน","พระเอกหนัง","นางเอก","ผู้กำกับ","กล้องถ่ายหนัง","ละครเวที","สแตนด์อัพคอเมดี","รายการเกมโชว์","มิวสิกวิดีโอ","แฟนคลับ","ป้ายไฟคอนเสิร์ต","ทีวีจอแบน","ตั๋วหนัง","ซีรีส์เกาหลี","อนิเมะญี่ปุ่น","วงดนตรีร็อก","นักร้องเดี่ยว","หุ่นเชิด","ปาหี่กายกรรม","คอนเสิร์ตกลางแจ้ง","เพลย์ลิสต์เพลง"],
-  nature:["ภูเขาสูง","แม่น้ำ","น้ำตก","ทะเลกว้าง","ป่าไม้","ทะเลทราย","ภูเขาน้ำแข็ง","ภูเขาไฟระเบิด","ถ้ำลึก","เกาะร้าง","แนวปะการัง","ต้นไม้ใหญ่","ทุ่งทานตะวัน","กระบองเพชร","เห็ดในป่า","ใบไม้ร่วง","สายฟ้าฟาด","รุ้งกินน้ำ","พายุทอร์นาโด","หิมะตก","พระอาทิตย์ตก","ดวงจันทร์เต็มดวง","ดาวบนฟ้า","เมฆฝน","น้ำค้างแข็ง","ทุ่งหญ้า","หุบเขาลึก","แก่งหิน","บ่อน้ำพุร้อน","ทะเลสาบ"],
-  activities:["ตั้งแคมป์","ปิกนิก","ตกปลา","ปีนเขา","ดำน้ำดูปะการัง","เล่นเซิร์ฟ","ปั่นจักรยานเที่ยว","เล่นว่าว","ก่อปราสาททราย","จุดแคมป์ไฟ","ดูดาว","ถ่ายรูป","วาดรูป","ทำอาหาร","ทำสวน","อ่านหนังสือ","เล่นโยคะ","เต้นรำ","ร้องคาราโอเกะ","เล่นบอร์ดเกม","ต่อจิ๊กซอว์","ปั้นดินน้ำมัน","พับกระดาษ","ช้อปปิ้ง","ดูหนังที่บ้าน","ปลูกต้นไม้","เดินเล่นในสวน","เล่นสเก็ต","ตีกอล์ฟ","เป่าเค้กวันเกิด"],
-  festivals:["สงกรานต์","ลอยกระทง","ตรุษจีน","วันคริสต์มาส","ปีใหม่","วันฮาโลวีน","วันวาเลนไทน์","งานวัด","เทศกาลโคมไฟ","งานแต่งงาน","วันเกิด","งานบวช","เทศกาลดนตรี","พลุไฟ","ขบวนพาเหรด","เชิดสิงโต","แห่เทียนพรรษา","บั้งไฟ","ผีตาโขน","เทศกาลกินเจ","เค้กวันเกิด","กล่องของขวัญ","ลูกโป่งงานวันเกิด","ต้นคริสต์มาส","ซานตาคลอส","อั่งเปา","พวงมาลัย","หน้ากากฮาโลวีน","ฟักทองแกะสลัก","เทียนวันเกิด"],
-  objects:["ร่มกันฝน","นาฬิกาปลุก","กรรไกร","ค้อน","ไขควง","แว่นขยาย","ไฟฉาย","เทียนไข","กุญแจ","แม่กุญแจ","กระเป๋าเดินทาง","กล่องของขวัญ","ตุ๊กตาหมี","ลูกบอล","ว่าว","ถังขยะ","ไม้กวาด","กระจกเงา","หวี","แปรงสีฟัน","ผ้าเช็ดตัว","หม้อต้ม","กระทะ","ช้อนส้อม","แก้วน้ำ","เตารีด","พัดลม","ร่มชายหาด","กระติกน้ำ","ตะเกียง"],
-  emotions:["มีความสุข","เศร้า","โกรธ","ตกใจ","กลัว","เขินอาย","ตื่นเต้น","เบื่อ","ง่วงนอน","หิว","ประหลาดใจ","อิจฉา","ภูมิใจ","สับสน","ผิดหวัง","ขยะแขยง","ตื่นตระหนก","สงสาร","หลงรัก","หัวเราะร่า","ร้องไห้","กังวล","มั่นใจ","อึดอัด","ผ่อนคลาย","เหงา","ดีใจสุดขีด","โมโหสุดๆ","ขำกลิ้ง","น้ำตาไหลพราก"],
-  fantasy:["มังกรไฟ","ยูนิคอร์น","นางเงือก","ภูตจิ๋ว","ก็อบลิน","ฟีนิกซ์","เซนทอร์","มินอทอร์","แวมไพร์","มนุษย์หมาป่า","ผีดิบซอมบี้","แม่มดร่ายมนตร์","พ่อมดเฒ่า","อัศวินมังกร","ดาบเอ็กซ์คาลิเบอร์","ลูกแก้ววิเศษ","พรมวิเศษ","ตะเกียงวิเศษ","ยักษ์จินนี่","ปราสาทลอยฟ้า","ป่าต้องมนต์","คฑาเวทมนตร์","ปีกนางฟ้า","มงกุฎราชา","ม้าบินมีปีก","กริฟฟิน","ต้นไม้พูดได้","มงกุฎเวท","หมวกพ่อมด","คริสตัลทำนาย"],
-  space:["จรวดอวกาศ","ยานอวกาศ","นักบินอวกาศ","ดาวเคราะห์","ดวงอาทิตย์","ดวงจันทร์","ดาวเสาร์","ดาวอังคาร","ดาวพฤหัส","ดาวหาง","ดาวตก","กาแล็กซี","หลุมดำ","สถานีอวกาศ","ดาวเทียม","มนุษย์ต่างดาว","จานบิน","กล้องโทรทรรศน์","ชุดอวกาศ","ธงบนดวงจันทร์","หลุมอุกกาบาต","เนบิวลา","ระบบสุริยะ","ทางช้างเผือก","รถสำรวจดาวอังคาร","จรวดขับดัน","สุริยุปราคา","ดาวนิวตรอน","ยานสำรวจ","วงแหวนดาวเสาร์"],
-  verbs:["วิ่ง","เดิน","กิน","ดื่ม","นอนหลับ","กระโดด","ว่ายน้ำ","ปีนป่าย","เต้นรำ","ร้องเพลง","หัวเราะ","ร้องไห้","อ่านหนังสือ","เขียนหนังสือ","วาดรูป","ถ่ายรูป","ทำอาหาร","ล้างจาน","กวาดบ้าน","ซักผ้า","ขับรถ","ขี่จักรยาน","เตะบอล","โยนบอล","ตกปลา","ปลูกต้นไม้","รดน้ำต้นไม้","ตัดผม","แปรงฟัน","อาบน้ำ","ยกของหนัก","กอด"]
+  places:{e:["บ้าน","โรงเรียน","วัด","ชายหาด","ภูเขา","สวนสาธารณะ","ตลาด","สนามบิน","เกาะ","น้ำตก"],m:["โรงพยาบาล","สถานีรถไฟ","ห้างสรรพสินค้า","ปราสาท","สวนสนุก","สวนสัตว์","ประภาคาร","ร้านกาแฟ","สะพานแขวน","ฟาร์ม"],h:["พิพิธภัณฑ์","ภูเขาไฟ","ถ้ำหินงอก","ทะเลทราย","สถานีอวกาศ","หอคอยเอน","น้ำพุกลางเมือง"]},
+  people:{e:["เด็ก","คุณยาย","คุณตา","ตัวตลก","ราชา","ราชินี","เจ้าหญิง","ทารก","นักมวย","โจรสลัด"],m:["เจ้าสาว","เจ้าบ่าว","อัศวิน","แม่มด","นางฟ้า","ยักษ์","ซูเปอร์ฮีโร่","นักเต้น","มนุษย์ต่างดาว","ผีดิบ"],h:["นักสำรวจ","ฤๅษี","ยามเฝ้าประตู","นักดนตรีข้างถนน","คนแคระ","แฝดสาม","นักโทษ"]},
+  professions:{e:["หมอ","ครู","ตำรวจ","พ่อครัว","ชาวนา","นักดับเพลิง","ทหาร","พยาบาล","จิตรกร","นักร้อง"],m:["หมอฟัน","สัตวแพทย์","นักบิน","บาริสต้า","ช่างตัดผม","นักดำน้ำ","ช่างภาพ","นักบินอวกาศ","ชาวประมง","คนเลี้ยงผึ้ง"],h:["นักโบราณคดี","สถาปนิก","วิศวกรหุ่นยนต์","ผู้ตัดต่อหนัง","นักธรณีวิทยา","ผู้ฝึกสิงโต","นักจัดดอกไม้"]},
+  animals:{e:["แมว","หมา","ปลา","นก","ช้าง","กระต่าย","เป็ด","หมู","ปู","ผีเสื้อ"],m:["ม้าลาย","ยีราฟ","เพนกวิน","จระเข้","นกยูง","เต่าทะเล","หมีแพนด้า","จิงโจ้","ค้างคาว","งูเห่า"],h:["ตัวนิ่ม","ตุ่นปากเป็ด","กิ้งก่าคาเมเลียน","สิงโตทะเล","นกฟลามิงโก","ม้าน้ำ","แมงกะพรุน","เม่นแคระ"]},
+  food:{e:["ไข่ดาว","ข้าว","กล้วย","แตงโม","พิซซ่า","ไก่ทอด","ไอศกรีม","โดนัท","แฮมเบอร์เกอร์","ลูกอม"],m:["ข้าวผัด","ส้มตำ","ก๋วยเตี๋ยว","ซูชิ","สเต็ก","ทาโก้","ชานมไข่มุก","ข้าวเหนียวมะม่วง","ราเมง","ครัวซอง"],h:["ต้มยำกุ้ง","แกงเขียวหวาน","ข้าวซอย","สปาเกตตีคาโบนารา","บัวลอย","มาการอง","ขนมครก","ไข่เจียวฟู"]},
+  vehicles:{e:["รถยนต์","จักรยาน","เรือ","เครื่องบิน","รถไฟ","รถบัส","มอเตอร์ไซค์","รถบรรทุก","เฮลิคอปเตอร์","จรวด"],m:["เรือใบ","เรือดำน้ำ","รถตุ๊กตุ๊ก","บอลลูนลมร้อน","รถดับเพลิง","รถพยาบาล","รถตำรวจ","รถถัง","สกูตเตอร์","เรือยอชต์"],h:["เรือสำราญ","รถไฟหัวจรวด","รถไฟใต้ดิน","รถขุดดิน","รถเครน","เครื่องร่อน","รถราง"]},
+  sports:{e:["ฟุตบอล","บาสเกตบอล","ว่ายน้ำ","วิ่ง","เทนนิส","แบดมินตัน","ปิงปอง","มวย","กอล์ฟ","โบว์ลิ่ง"],m:["วอลเลย์บอล","เทควันโด","ยกน้ำหนัก","ปั่นจักรยาน","เซิร์ฟบอร์ด","ยิงธนู","สเก็ตน้ำแข็ง","ขี่ม้า","ปีนหน้าผา","กระโดดร่ม"],h:["เซปักตะกร้อ","ฟันดาบ","ยิมนาสติก","พายเรือคายัค","ดำน้ำลึก","สนุกเกอร์","ปาเป้า"]},
+  school:{e:["ดินสอ","ยางลบ","หนังสือ","กระเป๋านักเรียน","ไม้บรรทัด","กระดานดำ","โต๊ะเรียน","สีเทียน","นาฬิกา","ระฆัง"],m:["การบ้าน","ข้อสอบ","ลูกโลกจำลอง","แผนที่โลก","เครื่องคิดเลข","กล้องจุลทรรศน์","ชุดนักเรียน","โรงอาหาร","สนามเด็กเล่น","พู่กัน"],h:["เข้าแถวหน้าเสาธง","ห้องวิทยาศาสตร์","หัวหน้าห้อง","สอบปลายภาค","สมุดพก","ครูประจำชั้น"]},
+  office:{e:["คอมพิวเตอร์","โทรศัพท์","ปากกา","กระดาษ","เก้าอี้","โต๊ะทำงาน","กาแฟ","นาฬิกา","ไวท์บอร์ด","ที่เย็บกระดาษ"],m:["แล็ปท็อป","เครื่องพิมพ์","เครื่องถ่ายเอกสาร","ปฏิทินตั้งโต๊ะ","คลิปหนีบกระดาษ","นามบัตร","กราฟยอดขาย","ห้องประชุม","ซองเงินเดือน","ที่เจาะกระดาษ"],h:["ประชุมออนไลน์","พรีเซนต์งาน","เครื่องตอกบัตร","ใบลางาน","สัญญาจ้าง","เดดไลน์"]},
+  clothing:{e:["เสื้อยืด","กางเกง","หมวก","รองเท้า","ถุงเท้า","กระโปรง","แว่นตา","เนคไท","ถุงมือ","ผ้าพันคอ"],m:["เสื้อกันหนาว","แจ็คเก็ตหนัง","ชุดเดรส","รองเท้าบูท","รองเท้าส้นสูง","หมวกปีกกว้าง","เข็มขัด","เป้สะพายหลัง","ชุดว่ายน้ำ","หูกระต่าย"],h:["ชุดกิโมโน","สูทผูกไท","ชุดเจ้าสาว","ชุดนอน","นาฬิกาข้อมือ","กระเป๋าถือ"]},
+  tech:{e:["มือถือ","หูฟัง","กล้อง","ทีวี","เมาส์","คีย์บอร์ด","แบตเตอรี่","หุ่นยนต์","ลำโพง","นาฬิกา"],m:["แท็บเล็ต","แล็ปท็อป","สมาร์ทวอทช์","โดรน","เครื่องเล่นเกม","จอยเกม","เราเตอร์","ที่ชาร์จ","แฟลชไดรฟ์","กล้องวงจรปิด"],h:["เครื่องพิมพ์สามมิติ","แว่นวีอาร์","ดาวเทียม","ปัญญาประดิษฐ์","คิวอาร์โค้ด","สแกนลายนิ้วมือ","ชิปประมวลผล"]},
+  gaming:{e:["ดาบ","โล่","หัวใจ","กุญแจ","เหรียญ","มงกุฎ","ธนู","ระเบิด","ดาว","หีบสมบัติ"],m:["นักรบ","มังกรไฟ","บอสใหญ่","ดันเจี้ยน","ดาบวิเศษ","ยาฟื้นพลัง","แผนที่ขุมทรัพย์","จอยสติ๊ก","มอนสเตอร์","เกราะเหล็ก"],h:["เลเวลอัป","คาถาเวทมนตร์","พอร์ทัลมิติ","กิลด์นักผจญภัย","จุดรีสปอน","คริสตัลพลัง","ด่านสุดท้าย"]},
+  entertainment:{e:["ไมโครโฟน","กีตาร์","กลอง","เปียโน","ป๊อปคอร์น","ทีวี","ตั๋วหนัง","ลำโพง","หูฟัง","พรมแดง"],m:["โรงหนัง","ดีเจ","วงดนตรี","นักร้อง","ผู้กำกับ","กล้องถ่ายหนัง","ละครเวที","คอนเสิร์ต","หุ่นเชิด","รางวัลออสการ์"],h:["สแตนด์อัพคอเมดี","มิวสิกวิดีโอ","ป้ายไฟคอนเสิร์ต","ปาหี่กายกรรม","รายการเกมโชว์","ซีรีส์เกาหลี"]},
+  nature:{e:["ต้นไม้","ดอกไม้","ภูเขา","แม่น้ำ","ทะเล","ก้อนเมฆ","ดวงอาทิตย์","ดวงจันทร์","ดาว","สายรุ้ง"],m:["น้ำตก","ภูเขาน้ำแข็ง","ทุ่งทานตะวัน","กระบองเพชร","เห็ด","ใบไม้ร่วง","หิมะตก","พระอาทิตย์ตก","ทะเลสาบ","แนวปะการัง"],h:["ภูเขาไฟระเบิด","พายุทอร์นาโด","สายฟ้าฟาด","น้ำค้างแข็ง","บ่อน้ำพุร้อน","หุบเขาลึก","เนบิวลา"]},
+  activities:{e:["วาดรูป","ตกปลา","ปิกนิก","ว่ายน้ำ","ปีนเขา","ถ่ายรูป","ทำอาหาร","อ่านหนังสือ","เล่นว่าว","ดูหนัง"],m:["ตั้งแคมป์","ดำน้ำดูปะการัง","เล่นเซิร์ฟ","ก่อปราสาททราย","จุดแคมป์ไฟ","ดูดาว","เล่นโยคะ","ต่อจิ๊กซอว์","ปลูกต้นไม้","เป่าเค้กวันเกิด"],h:["ร้องคาราโอเกะ","ปั้นดินน้ำมัน","พับกระดาษ","เล่นบอร์ดเกม","เดินป่า","ตีกอล์ฟ"]},
+  festivals:{e:["เค้กวันเกิด","ของขวัญ","ลูกโป่ง","พลุ","ซานตาคลอส","ต้นคริสต์มาส","กระทง","ฟักทองฮาโลวีน","หน้ากาก","อั่งเปา"],m:["สงกรานต์","ลอยกระทง","ตรุษจีน","วันคริสต์มาส","ปีใหม่","วันวาเลนไทน์","งานแต่งงาน","เชิดสิงโต","ขบวนพาเหรด","พวงมาลัย"],h:["แห่เทียนพรรษา","บั้งไฟ","ผีตาโขน","เทศกาลกินเจ","งานบวช","เทศกาลโคมไฟ"]},
+  objects:{e:["ร่ม","กุญแจ","กรรไกร","ค้อน","ไฟฉาย","เทียน","นาฬิกาปลุก","แก้วน้ำ","ช้อนส้อม","ลูกบอล"],m:["กระเป๋าเดินทาง","ตุ๊กตาหมี","ไม้กวาด","กระจกเงา","แปรงสีฟัน","หม้อต้ม","กระทะ","เตารีด","พัดลม","ตะเกียง"],h:["แว่นขยาย","ไขควง","กระติกน้ำ","ที่เปิดขวด","ร่มชายหาด","แม่กุญแจ"]},
+  emotions:{e:["มีความสุข","เศร้า","โกรธ","หิว","ง่วงนอน","ตกใจ","กลัว","หัวเราะ","ร้องไห้","รัก"],m:["เขินอาย","ตื่นเต้น","เบื่อ","ประหลาดใจ","สับสน","เหงา","ผ่อนคลาย","มั่นใจ","ขำกลิ้ง","ตื่นตระหนก"],h:["อิจฉา","ภูมิใจ","ผิดหวัง","ขยะแขยง","สงสาร","หลงรัก","อึดอัด","กังวล"]},
+  fantasy:{e:["มังกร","ยูนิคอร์น","นางเงือก","ผี","แม่มด","มงกุฎ","ดาบวิเศษ","พรมวิเศษ","ตะเกียงวิเศษ","ปีกนางฟ้า"],m:["นางฟ้า","พ่อมด","แวมไพร์","มนุษย์หมาป่า","ซอมบี้","ฟีนิกซ์","ยักษ์จินนี่","ปราสาทลอยฟ้า","ม้าบินมีปีก","ลูกแก้ววิเศษ"],h:["เซนทอร์","มินอทอร์","ก็อบลิน","กริฟฟิน","ป่าต้องมนต์","คฑาเวทมนตร์","ต้นไม้พูดได้"]},
+  space:{e:["จรวด","ดวงอาทิตย์","ดวงจันทร์","ดาว","โลก","ดาวเทียม","มนุษย์ต่างดาว","จานบิน","ดาวหาง","กล้องโทรทรรศน์"],m:["ยานอวกาศ","นักบินอวกาศ","ดาวเสาร์","ดาวอังคาร","สถานีอวกาศ","ชุดอวกาศ","ธงบนดวงจันทร์","ดาวตก","หลุมอุกกาบาต","ระบบสุริยะ"],h:["หลุมดำ","กาแล็กซี","เนบิวลา","ทางช้างเผือก","สุริยุปราคา","ดาวนิวตรอน","วงแหวนดาวเสาร์"]},
+  verbs:{e:["วิ่ง","เดิน","กิน","นอน","กระโดด","ว่ายน้ำ","ร้องเพลง","เต้นรำ","หัวเราะ","ร้องไห้"],m:["ปีนป่าย","วาดรูป","ทำอาหาร","ขับรถ","เตะบอล","ตกปลา","แปรงฟัน","อาบน้ำ","กอด","ยกของหนัก"],h:["รดน้ำต้นไม้","กวาดบ้าน","ซักผ้า","ล้างจาน","ตัดผม","ปลูกต้นไม้"]}
 };
+
 const CAT_NAME=CATS.reduce((o,c)=>{o[c.key]=c.name;return o;},{});
+/* ----- word selection: 3 difficulty tiers, dynamic by rank, no repeats per game ----- */
+function allWords(cat){const w=WORDS[cat]||{};return [...(w.e||[]),...(w.m||[]),...(w.h||[])];}
+const DIFF_DIST={ top:[["h",.8],["m",1]], mid:[["h",.45],["m",.9],["e",1]], bottom:[["e",.8],["m",1]] };
+function rankTier(drawerId){
+  const ranked=[...S.players].sort((a,b)=>b.score-a.score);
+  if(ranked.length<=1)return "mid";
+  const i=ranked.findIndex(p=>p.id===drawerId);
+  if(i<=0)return "top"; if(i>=ranked.length-1)return "bottom"; return "mid";
+}
+function pickLevel(tier){const r=Math.random();for(const [lv,c] of DIFF_DIST[tier]){if(r<=c)return lv;}return "m";}
+function pickChoices(cat,drawerId,n){
+  n=n||3;const tier=rankTier(drawerId);const used=S.usedWords||new Set();
+  const pools={e:(WORDS[cat].e||[]).filter(w=>!used.has(w)),m:(WORDS[cat].m||[]).filter(w=>!used.has(w)),h:(WORDS[cat].h||[]).filter(w=>!used.has(w))};
+  const out=[];
+  for(let i=0;i<n;i++){
+    const lv=pickLevel(tier);
+    let pick=null;
+    for(const L of [lv,"m","e","h"]){const av=(pools[L]||[]).filter(w=>!out.includes(w));if(av.length){pick=rand(av);break;}}
+    if(!pick){const all=allWords(cat).filter(w=>!out.includes(w));if(all.length)pick=rand(all);}   // fallback: ignore used if exhausted
+    if(pick)out.push(pick);
+  }
+  return out.length?out:[rand(allWords(cat))];
+}
+function lockWord(w){ if(!S.usedWords)S.usedWords=new Set(); S.usedWords.add(w); }
 const BOT_NAMES=["มิ้นท์","ก้อง","แพรว","บอส","ใบเฟิร์น","ต้นน้ำ","ปลื้ม","น้ำหวาน","โอ๊ต","ฟ้า","กล้า","มุก"];
 const PALETTE=["#000000","#4A3F35","#7A6E60","#9C8E7E","#C9BBA6","#E6DCCB","#F2EDE3","#FFFFFF","#7A1F1F","#C0392B","#D9685F","#E8836B","#E08A4B","#E8A23D","#E8B84B","#F2D6B6","#3E5E2E","#5E9E5E","#7FA88A","#9ED0B0","#2F7E6E","#3F8E7E","#5E9E97","#9AD0C8","#2C4E6E","#3E648A","#6FA0C9","#9AC0DE","#5E4B8A","#8A6EB0","#A98ACB","#E79EC0"];
 
@@ -672,9 +697,9 @@ function setHintText(t){const el=$("#wordHint");if(el){el.innerHTML="";el.textCo
 let S={
   me:{id:"me",name:"",charId:0},
   room:{code:"",pass:""}, players:[],
-  cat:"animals", roundTime:60, botCount:3, target:1000, maxRounds:20, totalRounds:0, gameOver:false,
+  cat:"animals", roundTime:50, botCount:3, target:1000, maxRounds:10, totalRounds:0, gameOver:false,
   roundNo:0, order:[], turnPtr:-1, myPos:null,
-  word:"", segs:[], choices:[], revealMask:[], drawerId:null,
+  word:"", segs:[], choices:[], revealMask:[], drawerId:null, usedWords:new Set(),
   timeLeft:0, tickId:null, botDrawId:null, phaseTimer:null, lobbyTimer:null,
   guessedThisRound:new Set(), guessAt:{}, spam:{}, roundActive:false, bscale:1
 };
@@ -749,7 +774,7 @@ function faceSVG(t){
   let f="";
   switch(t){
    case "happy": f=base+`<path d="M32 46 Q38 39 44 46" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M56 46 Q62 39 68 46" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M40 60 Q50 70 60 60" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/>`+blush; break;
-   case "laugh": f=base+`<path d="M31 44 Q38 38 45 44" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M55 44 Q62 38 69 44" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><path d="M37 56 Q50 74 63 56 Q50 62 37 56 Z" fill="${ink}"/>`+blush; break;
+   case "laugh": f=base+`<path d="M30 41 L41 46 L30 51" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M70 41 L59 46 L70 51" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M35 56 Q50 59 65 56 Q61 74 50 74 Q39 74 35 56 Z" fill="#fff" stroke="${ink}" stroke-width="2.6" stroke-linejoin="round"/><path d="M35 56 Q50 60 65 56" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/><path d="M44 57 L44 62 M50 58 L50 63 M56 57 L56 62" stroke="${ink}" stroke-width="1.1"/>`+blush; break;
    case "love": f=base+`<path d="M38 42 q-5 -6 -10 -1 q-4 5 10 11 q14 -6 10 -11 q-5 -5 -10 1 Z" fill="#E06A78"/><path d="M62 42 q-5 -6 -10 -1 q-4 5 10 11 q14 -6 10 -11 q-5 -5 -10 1 Z" fill="#E06A78"/><path d="M40 61 Q50 69 60 61" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`+blush; break;
    case "blush": f=base+`<circle cx="38" cy="46" r="3.6" fill="${ink}"/><circle cx="62" cy="46" r="3.6" fill="${ink}"/><path d="M44 60 Q50 64 56 60" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/><ellipse cx="29" cy="56" rx="8" ry="5.5" fill="#F0A0A0" opacity=".75"/><ellipse cx="71" cy="56" rx="8" ry="5.5" fill="#F0A0A0" opacity=".75"/>`; break;
    case "wink": f=base+`<path d="M33 47 Q38 42 43 47" fill="none" stroke="${ink}" stroke-width="3.4" stroke-linecap="round"/><circle cx="62" cy="46" r="3.6" fill="${ink}"/><path d="M40 60 Q50 67 60 59" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`+blush; break;
@@ -847,7 +872,7 @@ $("#roomPass").addEventListener("input",e=>{S.room.pass=e.target.value.trim();$(
 $$('.stepper button').forEach(b=>b.onclick=()=>{
   const d=+b.dataset.d;
   if(b.dataset.step==="time"){S.roundTime=Math.max(30,Math.min(120,S.roundTime+d*10));$("#timeVal").textContent=S.roundTime;if(NET.online&&NET.isHost)netSetMeta("roundTime",S.roundTime);}
-  else if(b.dataset.step==="rounds"){S.maxRounds=Math.max(10,Math.min(40,S.maxRounds+d*5));$("#roundsValL").textContent=S.maxRounds;if(NET.online&&NET.isHost)netSetMeta("maxRounds",S.maxRounds);}
+  else if(b.dataset.step==="rounds"){const opts=[5,10,15,20,30];let i=opts.indexOf(S.maxRounds);if(i<0)i=1;i=Math.max(0,Math.min(opts.length-1,i+d));S.maxRounds=opts[i];$("#roundsValL").textContent=S.maxRounds;if(NET.online&&NET.isHost)netSetMeta("maxRounds",S.maxRounds);}
 });
 $("#readyBtn").onclick=()=>{const meE=S.players.find(p=>p.id===S.me.id);if(NET.online){netSetReady(!(meE&&meE.ready));return;}if(meE){meE.ready=!meE.ready;renderLobby();}};
 $("#leaveLobby").onclick=()=>{ if(NET.online)netLeave(); clearInterval(S.lobbyTimer); S.players=[]; show("home"); };
@@ -890,12 +915,12 @@ $("#addBotBtn").onclick=netAddBot;
 function startMatch(){
   clearInterval(S.lobbyTimer);
   S.players.forEach(p=>p.score=0);
-  S.roundNo=0;S.turnPtr=-1;S.gameOver=false;
+  S.roundNo=0;S.turnPtr=-1;S.gameOver=false;S.usedWords=new Set();
   S.totalRounds=S.maxRounds;
   $("#roundTot").textContent=S.totalRounds;updateCatTag();
   $("#guessfeed").innerHTML="";$("#logList").innerHTML="";
   show("game");setupBoard();buildToolUI();renderScores();
-  setTimeout(diceRollStart,350);
+  setTimeout(numberRollStart,350);
 }
 /* pre-game MODE VOTE: large cards, real-time counts, tie=random, instant start when all voted */
 function modeVotePre(){
@@ -919,28 +944,38 @@ function modeVotePre(){
 }
 
 /* roll dice -> highest starts; sets round-robin order */
-function diceRollStart(){
-  const rolls=S.players.map(p=>({p,r:1+Math.floor(Math.random()*6)}));
-  let max=Math.max(...rolls.map(x=>x.r));
-  const winners=rolls.filter(x=>x.r===max);const winner=rand(winners).p;
-  const PIPS={1:[5],2:[1,9],3:[1,5,9],4:[1,3,7,9],5:[1,3,5,7,9],6:[1,3,4,6,7,9]};
-  const dieHTML=n=>{let s="";for(let i=1;i<=9;i++)s+=`<span>${PIPS[n].includes(i)?"<i></i>":""}</span>`;return s;};
-  openModal(`<h2 class="disp">🎲 Who draws first?</h2><p class="muted">Highest roll starts</p>
-    <div class="dice-stage"><div class="die" id="bigDie">${dieHTML(1)}</div><div class="roll-list" id="rollList"></div></div>`);
-  let spins=0;const di=setInterval(()=>{$("#bigDie").innerHTML=dieHTML(1+Math.floor(Math.random()*6));sndTick();if(++spins>=10){clearInterval(di);reveal();}},90);
-  function reveal(){
-    $("#bigDie").innerHTML=dieHTML(winner&&rolls.find(x=>x.p===winner).r||max);
-    const list=$("#rollList");
-    rolls.sort((a,b)=>b.r-a.r).forEach((x,i)=>setTimeout(()=>{
-      const row=document.createElement("div");row.className="roll-row"+(x.p===winner?" win":"");
-      row.innerHTML=`${avaHTML(x.p)}<span class="pname">${esc(x.p.name)}</span><span class="rn">${x.r}</span>`;
-      list.appendChild(row);if(x.p===winner)sndTurn();
-    },i*160));
-    // build order starting at winner, round-robin
-    const ids=S.players.map(p=>p.id);const wi=ids.indexOf(winner.id);
-    S.order=ids.slice(wi).concat(ids.slice(0,wi));
-    setTimeout(()=>{closeModal();nextTurn();},rolls.length*160+1400);
+/* ----- turn order: unique random 0–99, highest first, animated ----- */
+function makeRolls(players){
+  const pool=[];for(let i=0;i<100;i++)pool.push(i);
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  const rolls={};players.forEach((p,i)=>rolls[p.id]=pool[i]);
+  return rolls;
+}
+function orderFromRolls(rolls){ return Object.keys(rolls).sort((a,b)=>rolls[b]-rolls[a]); }   // high -> low
+function rollOrderAnim(rolls,onDone){
+  const ranked=Object.keys(rolls).map(id=>({id,r:rolls[id],p:S.players.find(x=>x.id===id)||{name:"?",charId:0}})).sort((a,b)=>b.r-a.r);
+  openModal(`<h2 class="disp">🎲 Turn order</h2><p class="muted">Random 0–99 · highest draws first</p>
+    <div class="dice-stage"><div class="roll-list" id="rollList2"></div></div>`);
+  const list=$("#rollList2");
+  ranked.forEach((x,i)=>{
+    const row=document.createElement("div");row.className="roll-row";row.id="rr_"+i;
+    row.innerHTML=`${avaHTML(x.p)}<span class="pname">${esc(x.p.name)}</span><span class="rn" id="rn_${i}">0</span>`;
+    list.appendChild(row);
+  });
+  let spins=0;const sp=setInterval(()=>{
+    ranked.forEach((x,i)=>{const el=document.getElementById("rn_"+i);if(el)el.textContent=Math.floor(Math.random()*100);});
+    sndTick();
+    if(++spins>=12){clearInterval(sp);settle();}
+  },80);
+  function settle(){
+    ranked.forEach((x,i)=>{const el=document.getElementById("rn_"+i);if(el)el.textContent=x.r;});
+    setTimeout(()=>{const w=document.getElementById("rr_0");if(w)w.classList.add("win");sndTurn();},250);
+    setTimeout(()=>{closeModal();onDone&&onDone();},3000);   // wait 3s, highlight winner, then start
   }
+}
+function numberRollStart(){
+  const rolls=makeRolls(S.players);S.order=orderFromRolls(rolls);
+  rollOrderAnim(rolls,()=>nextTurn());
 }
 
 /* =================== CANVAS (fixed coordinate mapping) =================== */
@@ -1036,7 +1071,7 @@ function nextTurn(){
   while(guard++<=S.order.length*2){S.turnPtr++;const id=S.order[S.turnPtr%S.order.length];if(S.players.find(p=>p.id===id)){S.drawerId=id;found=true;break;}}
   if(!found)return endGame();
   S.roundNo++;S.roundActive=false;
-  S.choices=[...WORDS[S.cat]].sort(()=>Math.random()-.5).slice(0,3);
+  S.choices=pickChoices(S.cat,S.drawerId,3);
   $("#roundNo").textContent=S.roundNo;updateCatTag();
   setHintText("• • •");$("#wordSub").textContent="New turn";
   clearBoard();renderScores();setToolsLocked(true);resetHourglass();
@@ -1067,6 +1102,7 @@ function pickPhaseHuman(drawer,rn){
 }
 function beginRound(word){
   clearPhase();
+  lockWord(word);
   S.word=word;S.segs=thaiSegs(word);S.revealMask=S.segs.map(s=>s===" ");
   S.guessedThisRound=new Set();S.guessAt={};S.spam={};S.timeLeft=S.roundTime;S.roundActive=true;
   const meDraw=S.drawerId===S.me.id;const drawer=S.players.find(p=>p.id===S.drawerId);
@@ -1143,7 +1179,7 @@ function scheduleBotGuesses(){
   const rn=S.roundNo;
   S.players.filter(p=>p.isBot&&p.id!==S.drawerId).forEach(bot=>{
     const wrongs=Math.floor(Math.random()*2);
-    for(let k=0;k<wrongs;k++)setTimeout(()=>{if(S.roundActive&&S.roundNo===rn&&!S.guessedThisRound.has(bot.id)){const wg=rand(WORDS[S.cat].filter(w=>w!==S.word));chat(bot.name,wg,bot,isClose(wg,S.word)?"close":"");}},(3+Math.random()*(S.roundTime*.5))*1000);
+    for(let k=0;k<wrongs;k++)setTimeout(()=>{if(S.roundActive&&S.roundNo===rn&&!S.guessedThisRound.has(bot.id)){const wg=rand(allWords(S.cat).filter(w=>w!==S.word));chat(bot.name,wg,bot,isClose(wg,S.word)?"close":"");}},(3+Math.random()*(S.roundTime*.5))*1000);
     const solveT=(.18+Math.random()*.7)*S.roundTime;
     setTimeout(()=>{if(S.roundActive&&S.roundNo===rn&&!S.guessedThisRound.has(bot.id)&&Math.random()<bot.skill)registerCorrect(bot);},solveT*1000);
   });
@@ -1309,7 +1345,7 @@ const firebaseConfig = {
   appId: "1:346657179865:web:ece9884491eb2260da16c8",
   databaseURL: "https://gusswhat-newkid-default-rtdb.asia-southeast1.firebasedatabase.app"
 };
-const NET={ ready:false, online:false, code:null, uid:null, isHost:false, db:null, base:null, hostUid:null, metaPhase:"lobby", playersMap:{}, wordRound:null, lastRound:null };
+const NET={ ready:false, online:false, code:null, uid:null, isHost:false, db:null, base:null, hostUid:null, metaPhase:"lobby", playersMap:{}, wordRound:null, lastRound:null, rolling:false };
 function netAvailable(){ return typeof firebase!=="undefined" && firebase.database && firebase.auth; }
 let _authReady=null;
 function netEnsureAuth(){
@@ -1369,6 +1405,7 @@ function netLeave(){
     netRef("players/"+NET.uid).remove(); netRef().off();
   }catch(e){}
   NET.online=false;NET.code=null;NET.base=null;NET.isHost=false;NET.lastRound=null;NET.playersMap={};
+  S.champWins={};S.pigHats={};   // crown/pig stats reset on leaving the room
 }
 
 /* ---------- watchers ---------- */
@@ -1450,11 +1487,13 @@ function netSetMeta(k,v){ if(NET.online&&NET.isHost)netRef("meta/"+k).set(v); }
 function netStartGame(){
   if(!(NET.online&&NET.isHost))return false;
   S.players.forEach(p=>{p.score=0;netRef("players/"+p.id+"/score").set(0);});
-  S.totalRounds=S.maxRounds;S.roundNo=0;S.gameOver=false;
-  S.order=S.players.map(p=>p.id).sort(()=>Math.random()-.5);S.turnPtr=-1;
+  S.totalRounds=S.maxRounds;S.roundNo=0;S.gameOver=false;S.turnPtr=-1;S.usedWords=new Set();
+  const rolls=makeRolls(S.players);S.order=orderFromRolls(rolls);
   netRef("chat").remove();netRef("strokes").remove();netRef("guesses").remove();
   netRef("meta/phase").set("playing");
-  netEnterGame();netNextTurnHost();
+  netEnterGame();
+  netRef("game").set({phase:"roll",rolls,order:S.order,roundNo:0,totalRounds:S.totalRounds,cat:S.cat});  // everyone sees the roll
+  rollOrderAnim(rolls,()=>{ if(NET.isHost)netNextTurnHost(); });
   return true;
 }
 
@@ -1516,10 +1555,12 @@ function netNextTurnHost(){
   S.turnPtr=(S.turnPtr+1)%S.order.length;S.roundNo++;
   S.drawerId=S.order[S.turnPtr];
   const drawerP=S.players.find(p=>p.id===S.drawerId);
+  const choices=pickChoices(S.cat,S.drawerId,3);
   if(drawerP&&drawerP.isBot){                       // bots prefer words they can actually draw
-    const dW=WORDS[S.cat].filter(w=>doodleFor(w));
-    S.word=dW.length?rand(dW):rand(WORDS[S.cat]);
-  } else S.word=rand(WORDS[S.cat]);
+    const dW=choices.filter(w=>doodleFor(w));
+    S.word=dW.length?rand(dW):rand(choices);
+  } else S.word=rand(choices);
+  lockWord(S.word);
   S.segs=thaiSegs(S.word);S.revealMask=S.segs.map(s=>s===" ");
   S.guessedThisRound=new Set();
   S.timeLeft=S.roundTime;S.roundActive=true;
@@ -1613,7 +1654,12 @@ function netApplyStroke(s){
 function netApplyGame(g){
   if(!g)return;
   if(g.phase==="ended"){netShowEnd(g);return;}
+  if(g.phase==="roll"){
+    if(!NET.isHost){ if(!$("#game").classList.contains("on"))netEnterGame(); if(!NET.rolling){NET.rolling=true;rollOrderAnim(g.rolls||{},()=>{NET.rolling=false;});} }
+    return;
+  }
   if(!$("#game").classList.contains("on"))netEnterGame();
+  if(NET.rolling){NET.rolling=false;closeModal();}                                     // roll done, game starting
   if(NET.lastRound!==g.roundNo){ if(board)clearBoard(); NET.lastRound=g.roundNo; }   // clear on new turn (host + clients)
   S.roundNo=g.roundNo;S.totalRounds=g.totalRounds;S.cat=g.cat;S.drawerId=g.drawerId;S.timeLeft=g.timeLeft;
   S.guessedThisRound=new Set(Object.keys(g.solved||{}));
