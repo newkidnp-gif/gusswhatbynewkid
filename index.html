@@ -86,6 +86,11 @@ h1,h2,h3{margin:0;font-weight:600}
 .char.sel{border-color:var(--accent);background:var(--accent-soft)}
 .char .cw{width:100%;aspect-ratio:1;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden}
 .char .cw svg{width:92%;height:92%}
+.acc-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:4px}
+.accbtn{border:2px solid transparent;border-radius:12px;background:var(--surface-2);aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:20px;transition:.12s;cursor:pointer}
+.accbtn:hover{background:#ECE3D3}
+.accbtn.sel{border-color:var(--accent);background:var(--accent-soft)}
+.accbtn .accx{color:var(--ink-soft);font-size:15px}
 .home-top{display:flex;gap:12px;align-items:center}
 .preview-ava{width:48px;height:48px;background:var(--accent-soft)}
 .home-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
@@ -309,9 +314,9 @@ h1,h2,h3{margin:0;font-weight:600}
 .emo-bubble::after{content:"";position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #fff}
 .emo-bubble svg{width:90%;height:90%}
 .emo-bubble.pop{animation:emopop .16s ease-out}
-/* crown / pig icon floating above the head */
-.seat .head-badge{position:absolute;top:-16px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none}
-.head-badge .hb{font-size:30px;line-height:1;display:inline-block;position:relative;filter:drop-shadow(0 2px 3px rgba(74,63,53,.3))}
+/* crown / pig icon floating above the (now bigger) head */
+.seat .head-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none}
+.head-badge .hb{font-size:27px;line-height:1;display:inline-block;position:relative;filter:drop-shadow(0 2px 3px rgba(74,63,53,.3))}
 .head-badge .hb .xn{position:absolute;right:-13px;bottom:-3px;font-family:var(--disp);font-size:13px;color:#fff;background:var(--accent);border-radius:9px;padding:0 4px;box-shadow:var(--shadow)}
 .ava-wrap{position:relative;flex:0 0 auto;line-height:0}
 .ava-badge{position:absolute;top:-9px;left:-7px;font-size:15px;z-index:3;filter:drop-shadow(0 1px 1px rgba(74,63,53,.3))}
@@ -353,6 +358,8 @@ h1,h2,h3{margin:0;font-weight:600}
         </div>
         <p class="label" style="margin-top:16px">Pick your animal</p>
         <div id="charGrid" class="char-grid"></div>
+        <p class="label" style="margin-top:16px">Accessory</p>
+        <div id="accGrid" class="acc-grid"></div>
         <div class="home-sound">
           <button id="muteBtnHome" class="soundtoggle" title="Sound effects on / off">🔊 Sound: On</button>
           <button id="bgmBtnHome" class="soundtoggle bgm-toggle off" title="Background music on / off">🎵 Music: Off</button>
@@ -580,10 +587,28 @@ const CHARACTERS=[
  {key:"bird",head:"#6FA8DC",belly:"#FBE7A8",dark:"#4E7BB5",outline:"#3E6492",nose:"#E8A23D",ring:"#E6EFFA",cheek:"#A8C8EC"},
  {key:"chicken",head:"#F6F0E6",belly:"#FFFFFF",dark:"#D9CFC0",outline:"#B0997C",nose:"#E8A23D",ring:"#F6F1E8",cheek:"#F2C4B8"}
 ];
-function _eyes(y,lx,rx,col){col=col||"#2A2730";return `<circle cx="${lx}" cy="${y}" r="3.4" fill="${col}"/><circle cx="${rx}" cy="${y}" r="3.4" fill="${col}"/><circle cx="${lx+1}" cy="${y-1}" r="1" fill="#fff"/><circle cx="${rx+1}" cy="${y-1}" r="1" fill="#fff"/>`;}
-function _blush(c,y){y=y||66;return `<ellipse cx="34" cy="${y}" rx="6" ry="4.5" fill="${c.cheek}" opacity=".6"/><ellipse cx="66" cy="${y}" rx="6" ry="4.5" fill="${c.cheek}" opacity=".6"/>`;}
+/* ACCESSORIES — drawn on top of the head (100x100 viewBox). index 0 = none */
+const ACCESSORIES=[
+ {key:"none",   name:"None",       emoji:"🚫", svg:""},
+ {key:"bow",    name:"Red bow",    emoji:"🎀", svg:`<g transform="translate(50,20)"><path d="M0 0 L-13 -7 Q-16 0 -13 7 Z" fill="#E8617A" stroke="#B5384F" stroke-width="1.4" stroke-linejoin="round"/><path d="M0 0 L13 -7 Q16 0 13 7 Z" fill="#E8617A" stroke="#B5384F" stroke-width="1.4" stroke-linejoin="round"/><circle r="3.6" fill="#F2879A" stroke="#B5384F" stroke-width="1.4"/></g>`},
+ {key:"flower", name:"Flower",     emoji:"🌸", svg:`<g transform="translate(68,22)">${[0,72,144,216,288].map(a=>`<ellipse cx="${(Math.cos(a*Math.PI/180)*6).toFixed(1)}" cy="${(Math.sin(a*Math.PI/180)*6).toFixed(1)}" rx="4.4" ry="3.2" fill="#F4A9C7" stroke="#D2729A" stroke-width="1" transform="rotate(${a})"/>`).join("")}<circle r="3.2" fill="#FFD86B" stroke="#E0A93D" stroke-width="1"/></g>`},
+ {key:"tophat", name:"Top hat",    emoji:"🎩", svg:`<g transform="translate(50,18)"><rect x="-16" y="6" width="32" height="4.5" rx="2.2" fill="#3A3340" stroke="#23202A" stroke-width="1.2"/><rect x="-10" y="-13" width="20" height="20" rx="2.5" fill="#3A3340" stroke="#23202A" stroke-width="1.2"/><rect x="-10" y="0" width="20" height="4" fill="#C9577A"/></g>`},
+ {key:"cap",    name:"Cap",        emoji:"🧢", svg:`<g transform="translate(50,22)"><path d="M-15 0 Q-15 -16 0 -16 Q15 -16 15 0 Z" fill="#4C84C4" stroke="#2E5C95" stroke-width="1.3" stroke-linejoin="round"/><path d="M-15 0 Q-30 1 -28 6 L-14 5 Z" fill="#3E6FB0" stroke="#2E5C95" stroke-width="1.3" stroke-linejoin="round"/><circle cx="0" cy="-15" r="2" fill="#2E5C95"/></g>`},
+ {key:"glasses",name:"Glasses",    emoji:"🤓", svg:`<g transform="translate(50,52)" fill="none" stroke="#3A3340" stroke-width="2"><circle cx="-10" cy="0" r="7.5"/><circle cx="10" cy="0" r="7.5"/><path d="M-2.5 0 H2.5"/><path d="M-17.5 -1 L-22 -4 M17.5 -1 L22 -4"/></g>`},
+ {key:"crown",  name:"Crown",      emoji:"👑", svg:`<g transform="translate(50,18)"><path d="M-14 6 L-14 -6 L-7 1 L0 -9 L7 1 L14 -6 L14 6 Z" fill="#FFD15C" stroke="#D69A28" stroke-width="1.3" stroke-linejoin="round"/><circle cx="-7" cy="1" r="1.6" fill="#E8617A"/><circle cx="0" cy="-9" r="1.6" fill="#6FB6E0"/><circle cx="7" cy="1" r="1.6" fill="#7ED3A0"/></g>`},
+ {key:"phones", name:"Headphones", emoji:"🎧", svg:`<g transform="translate(50,40)" stroke="#3A3340" stroke-width="2" fill="#4C84C4"><path d="M-30 6 Q-30 -22 0 -22 Q30 -22 30 6" fill="none"/><rect x="-34" y="4" width="9" height="14" rx="4" /><rect x="25" y="4" width="9" height="14" rx="4"/></g>`},
+ {key:"leaf",   name:"Leaf",       emoji:"🍃", svg:`<g transform="translate(56,20)"><path d="M0 6 Q-10 -2 -2 -12 Q10 -6 2 6 Z" fill="#7FBE6A" stroke="#4E8C3E" stroke-width="1.2" stroke-linejoin="round"/><path d="M-1 4 Q0 -4 1 -10" stroke="#4E8C3E" stroke-width="1" fill="none"/></g>`},
+ {key:"star",   name:"Star",       emoji:"⭐", svg:`<g transform="translate(66,18)"><path d="${[0,1,2,3,4].map(i=>{const a=(i*144-90)*Math.PI/180;return `${i?'L':'M'}${(Math.cos(a)*7).toFixed(1)} ${(Math.sin(a)*7).toFixed(1)}`;}).join(" ")} Z" fill="#FFD15C" stroke="#E0A93D" stroke-width="1.2" stroke-linejoin="round"/></g>`},
+ {key:"horns",  name:"Tiny horns", emoji:"😈", svg:`<g fill="#E8617A" stroke="#B5384F" stroke-width="1.2" stroke-linejoin="round"><path d="M33 28 Q29 18 36 16 Q37 23 40 27 Z"/><path d="M67 28 Q71 18 64 16 Q63 23 60 27 Z"/></g>`}
+];
+function accOf(p){return (p&&p.accId)?ACCESSORIES[p.accId]:null;}
+function _eyes(y,lx,rx,col){col=col||"#3B3138";
+  return `<ellipse cx="${lx}" cy="${y}" rx="4.6" ry="5.6" fill="${col}"/><ellipse cx="${rx}" cy="${y}" rx="4.6" ry="5.6" fill="${col}"/>`
+    +`<circle cx="${lx+1.5}" cy="${y-2}" r="1.9" fill="#fff"/><circle cx="${rx+1.5}" cy="${y-2}" r="1.9" fill="#fff"/>`
+    +`<circle cx="${lx-1.4}" cy="${y+1.8}" r=".95" fill="#fff" opacity=".75"/><circle cx="${rx-1.4}" cy="${y+1.8}" r=".95" fill="#fff" opacity=".75"/>`;}
+function _blush(c,y){y=y||66;return `<ellipse cx="31" cy="${y}" rx="6.6" ry="4.6" fill="${c.cheek}" opacity=".55"/><ellipse cx="69" cy="${y}" rx="6.6" ry="4.6" fill="${c.cheek}" opacity=".55"/>`;}
 function _head(c,r){return `<circle cx="50" cy="54" r="${r||33}" fill="${c.head}" stroke="${c.outline}" stroke-width="1.6"/>`;}
-function animalHead(c){
+function animalHead(c,accId){
   const O=c.outline,SW='stroke-width="1.6" stroke-linejoin="round"';let s="";
   switch(c.key){
   case "cat":
@@ -596,12 +621,15 @@ function animalHead(c){
       +`<path d="M50 67 Q46 71 43 69 M50 67 Q54 71 57 69" stroke="${O}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`
       +`<path d="M31 60 L15 57 M31 64 L14 64 M31 68 L16 71" stroke="${O}" stroke-width="1" opacity=".55"/><path d="M69 60 L85 57 M69 64 L86 64 M69 68 L84 71" stroke="${O}" stroke-width="1" opacity=".55"/>`+_blush(c);
     break;
-  case "wolf":
-    s=`<path d="M27 42 L22 8 L50 32 Z" fill="${c.head}" stroke="${O}" ${SW}/><path d="M73 42 L78 8 L50 32 Z" fill="${c.head}" stroke="${O}" ${SW}/>`+_head(c)
-      +`<path d="M30 38 L26 16 L47 32 Z" fill="${c.belly}"/><path d="M70 38 L74 16 L53 32 Z" fill="${c.belly}"/>`
-      +`<path d="M38 56 Q50 50 62 56 Q62 76 50 80 Q38 76 38 56 Z" fill="${c.belly}"/>`+_eyes(52,41,59)
-      +`<ellipse cx="50" cy="62" rx="4.2" ry="3.2" fill="${c.nose}"/>`
-      +`<path d="M50 65 L50 70 M50 70 Q45 73 42 71 M50 70 Q55 73 58 71" stroke="${O}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`+_blush(c,68);
+  case "wolf": case "dog":
+    s=_head(c)
+      +`<path d="M22 40 Q12 44 14 62 Q16 74 28 70 Q26 54 32 44 Z" fill="${c.dark}" stroke="${O}" stroke-width="1.5" stroke-linejoin="round"/>`
+      +`<path d="M78 40 Q88 44 86 62 Q84 74 72 70 Q74 54 68 44 Z" fill="${c.dark}" stroke="${O}" stroke-width="1.5" stroke-linejoin="round"/>`
+      +`<path d="M30 26 Q50 22 70 26 Q66 40 50 40 Q34 40 30 26 Z" fill="${c.belly}" opacity=".6"/>`
+      +`<ellipse cx="50" cy="64" rx="16" ry="13" fill="${c.belly}"/>`+_eyes(54,41,59)
+      +`<ellipse cx="50" cy="62" rx="4.4" ry="3.4" fill="${c.nose}"/>`
+      +`<path d="M50 65 L50 70 M50 70 Q45 73 42 71 M50 70 Q55 73 58 71" stroke="${O}" stroke-width="1.5" fill="none" stroke-linecap="round"/>`
+      +`<path d="M58 56 Q62 54 65 57" stroke="${O}" stroke-width="1" fill="none" opacity=".4"/>`+_blush(c,68);
     break;
   case "monkey":
     s=`<circle cx="17" cy="52" r="10" fill="${c.head}" stroke="${O}" stroke-width="1.6"/><circle cx="83" cy="52" r="10" fill="${c.head}" stroke="${O}" stroke-width="1.6"/><circle cx="17" cy="52" r="5" fill="${c.cheek}"/><circle cx="83" cy="52" r="5" fill="${c.cheek}"/>`+_head(c)
@@ -699,21 +727,46 @@ function animalHead(c){
       +`<path d="M47 62 Q50 69 53 62 Z" fill="#D9685F" stroke="#B5453E" stroke-width=".8" stroke-linejoin="round"/>`+_blush(c,60);
     break;
   }
-  return `<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.key}">${s}</svg>`;
+  const acc=(accId&&ACCESSORIES[accId])?ACCESSORIES[accId].svg:"";
+  return `<svg viewBox="0 0 100 100" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.key}">${s}${acc}</svg>`;
 }
 function charOf(p){return CHARACTERS[p.charId]||CHARACTERS[0];}
-function animalFigure(c){
-  const head=animalHead(c).replace(/^<svg[^>]*>/,"").replace(/<\/svg>$/,"");const O=c.outline;
-  return `<svg viewBox="0 0 100 150" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.key}">
-    <ellipse cx="40" cy="143" rx="10" ry="6" fill="${c.dark}"/><ellipse cx="60" cy="143" rx="10" ry="6" fill="${c.dark}"/>
-    <ellipse cx="22" cy="106" rx="8" ry="14" fill="${c.head}" stroke="${O}" stroke-width="2.4" transform="rotate(18 22 106)"/>
-    <ellipse cx="78" cy="106" rx="8" ry="14" fill="${c.head}" stroke="${O}" stroke-width="2.4" transform="rotate(-18 78 106)"/>
-    <path d="M24 90 Q24 54 50 54 Q76 54 76 90 L78 124 Q78 144 50 144 Q22 144 22 124 Z" fill="${c.head}" stroke="${O}" stroke-width="2.6"/>
-    <ellipse cx="50" cy="116" rx="15" ry="18" fill="${c.belly}"/>
-    <g transform="translate(8,0) scale(0.84)">${head}</g>
+function animalFigure(c,accId){
+  const head=animalHead(c,accId).replace(/^<svg[^>]*>/,"").replace(/<\/svg>$/,"");const O=c.outline,k=c.key;
+  const WING=["bird","chicken","penguin","bat"].indexOf(k)>=0;
+  const FIN=["fish","whale"].indexOf(k)>=0;
+  const PUFF=["rabbit","sheep"].indexOf(k)>=0;
+  const TUFT=(k==="lion");
+  const FURTAIL=["cat","dog","wolf","monkey","bison","panda","mole"].indexOf(k)>=0;
+  /* tail behind the body */
+  let tail="";
+  if(PUFF) tail=`<circle cx="72" cy="124" r="6.5" fill="${c.belly}" stroke="${O}" stroke-width="2"/>`;
+  else if(TUFT) tail=`<path d="M71 120 Q90 118 87 98" fill="none" stroke="${O}" stroke-width="3" stroke-linecap="round"/><circle cx="87" cy="97" r="5.5" fill="${c.dark}" stroke="${O}" stroke-width="1.6"/>`;
+  else if(FURTAIL) tail=`<path d="M70 120 Q90 120 86 98 Q80 111 68 113 Z" fill="${c.dark}" stroke="${O}" stroke-width="2" stroke-linejoin="round"/>`;
+  /* arms / wings / fins */
+  let arms="";
+  if(WING){ const wc=(k==="bird")?c.head:c.dark;
+    arms=`<path d="M31 98 Q14 106 26 124 Q33 112 35 102 Z" fill="${wc}" stroke="${O}" stroke-width="2.2" stroke-linejoin="round"/>`
+        +`<path d="M69 98 Q86 106 74 124 Q67 112 65 102 Z" fill="${wc}" stroke="${O}" stroke-width="2.2" stroke-linejoin="round"/>`;
+  } else if(FIN){
+    arms=`<path d="M30 102 Q14 106 21 120 Q29 113 33 106 Z" fill="${c.dark}" stroke="${O}" stroke-width="2" stroke-linejoin="round"/>`
+        +`<path d="M70 102 Q86 106 79 120 Q71 113 67 106 Z" fill="${c.dark}" stroke="${O}" stroke-width="2" stroke-linejoin="round"/>`;
+  } else {
+    arms=`<ellipse cx="28" cy="110" rx="5.5" ry="8.5" fill="${c.head}" stroke="${O}" stroke-width="2.2" transform="rotate(22 28 110)"/>`
+        +`<ellipse cx="72" cy="110" rx="5.5" ry="8.5" fill="${c.head}" stroke="${O}" stroke-width="2.2" transform="rotate(-22 72 110)"/>`;
+  }
+  /* feet — webbed orange for birds/penguins */
+  const footC=(WING&&k!=="bat")?"#E8A23D":c.dark;
+  const feet=`<ellipse cx="42" cy="141" rx="7" ry="4.6" fill="${footC}" stroke="${O}" stroke-width="1.4"/><ellipse cx="58" cy="141" rx="7" ry="4.6" fill="${footC}" stroke="${O}" stroke-width="1.4"/>`;
+  /* small body — top pulled up under the head so they connect (no gap) */
+  const body=`<path d="M30 90 Q30 79 50 79 Q70 79 70 90 L72 129 Q72 142 50 142 Q28 142 28 129 Z" fill="${c.head}" stroke="${O}" stroke-width="2.6"/>`
+    +`<ellipse cx="50" cy="116" rx="12" ry="15" fill="${c.belly}"/>`;
+  return `<svg viewBox="0 0 100 152" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${c.key}">
+    ${tail}${feet}${arms}${body}
+    <g transform="translate(2.5,4) scale(0.95)">${head}</g>
   </svg>`;
 }
-function avaHTML(p,extra){const c=charOf(p);return `<div class="pava ${extra||''}" style="background:${c.ring}">${animalHead(c)}</div>`;}
+function avaHTML(p,extra){const c=charOf(p);return `<div class="pava ${extra||''}" style="background:${c.ring}">${animalHead(c,p&&p.accId)}</div>`;}
 
 /* =================== TIMING / TARGET =================== */
 const RESULT_WAIT=8, NEWTURN_WAIT=10, PICK_WAIT=10, VOTE_WAIT=15;   // seconds between rounds
@@ -831,7 +884,7 @@ function setHintText(t){const el=$("#wordHint");if(el){el.innerHTML="";el.textCo
 
 /* =================== STATE =================== */
 let S={
-  me:{id:"me",name:"",charId:0},
+  me:{id:"me",name:"",charId:0,accId:0},
   room:{code:"",pass:""}, players:[],
   cat:"animals", roundTime:50, botCount:3, target:1000, maxRounds:2, totalRounds:0, gameOver:false,
   roundNo:0, order:[], turnPtr:-1, myPos:null,
@@ -862,9 +915,19 @@ function buildHome(){
     grid.appendChild(b);
   });
   $("#nameInput").addEventListener("input",e=>{S.me.name=e.target.value;});
+  buildAccGrid("#accGrid",()=>{paintHomeAva();});
   paintHomeAva();
 }
-function paintHomeAva(){const el=$("#homeAva");const c=charOf(S.me);el.style.background=c.ring;el.innerHTML=animalHead(c);}
+function buildAccGrid(sel,onPick){
+  const grid=$(sel);if(!grid)return;grid.innerHTML="";
+  ACCESSORIES.forEach((a,i)=>{
+    const b=document.createElement("button");b.className="accbtn"+(i===(S.me.accId||0)?" sel":"");b.title=a.name;
+    b.innerHTML = i===0 ? `<span class="accx">✕</span>` : `<span class="acce">${a.emoji}</span>`;
+    b.onclick=()=>{S.me.accId=i;$$(sel+" .accbtn").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");onPick&&onPick();};
+    grid.appendChild(b);
+  });
+}
+function paintHomeAva(){const el=$("#homeAva");const c=charOf(S.me);el.style.background=c.ring;el.innerHTML=animalHead(c,S.me.accId);}
 function ensureName(){if(!S.me.name.trim()){S.me.name="Player"+Math.floor(Math.random()*900+100);$("#nameInput").value=S.me.name;}}
 $("#btnCreate").onclick=()=>{ensureName();createRoom();};
 $("#btnJoin").onclick=()=>{ensureName();const c=($("#joinCodeInput").value||"").trim().toUpperCase();if(c.length<4)return toast("Enter the 4-letter room code");doJoin(c,"");};
@@ -1060,7 +1123,7 @@ function renderLobby(){
     el.dataset.pid=p.id;
     el.className="seat"+(isMe?" me":"")+(amHost()&&!isMe?" kickable":"");
     el.style.left=pos[0]+"%";el.style.top=pos[1]+"%";
-    el.innerHTML=`${headBadgeHTML(p)}<div class="seat-fig">${animalFigure(charOf(p))}</div>
+    el.innerHTML=`${headBadgeHTML(p)}<div class="seat-fig">${animalFigure(charOf(p),p.accId)}</div>
       <div class="seat-name">${esc(p.name)}</div>
       ${p.isHost?'<span class="htag">HOST</span>':''}
       <span class="seat-badge ${p.ready?'ready':'wait'}">${p.ready?'✓':'…'}</span>`;
@@ -1124,26 +1187,37 @@ $("#leaveLobby").onclick=()=>{ if(NET.online)netLeave(); clearInterval(S.lobbyTi
 function openEditProfile(){
   openModal(`<h2 class="disp">Name &amp; character</h2>
     <input id="editName" class="field" maxlength="14" placeholder="Type a nickname..." value="${esc(S.me.name||"")}">
-    <div id="editChars" class="char-grid" style="margin-top:12px;max-height:230px;overflow:auto"></div>
+    <div id="editChars" class="char-grid" style="margin-top:12px;max-height:200px;overflow:auto"></div>
+    <p class="label" style="margin-top:12px">Accessory</p>
+    <div id="editAcc" class="acc-grid"></div>
     <div class="row" style="margin-top:14px"><button class="btn" id="editCancel">Cancel</button><button class="btn primary" id="editSave">Save</button></div>`);
-  let pickId=S.me.charId||0;
+  let pickId=S.me.charId||0, accPick=S.me.accId||0;
   const grid=$("#editChars");
   CHARACTERS.forEach((c,i)=>{
     const b=document.createElement("button");b.className="char"+(i===pickId?" sel":"");b.setAttribute("aria-label",c.key);
-    b.innerHTML=`<div class="cw" style="background:${c.ring}">${animalHead(c)}</div>`;
+    b.innerHTML=`<div class="cw" style="background:${c.ring}">${animalHead(c,accPick)}</div>`;
     b.onclick=()=>{pickId=i;$$("#editChars .char").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");};
     grid.appendChild(b);
+  });
+  const ag=$("#editAcc");
+  ACCESSORIES.forEach((a,i)=>{
+    const b=document.createElement("button");b.className="accbtn"+(i===accPick?" sel":"");b.title=a.name;
+    b.innerHTML = i===0 ? `<span class="accx">✕</span>` : `<span class="acce">${a.emoji}</span>`;
+    b.onclick=()=>{accPick=i;$$("#editAcc .accbtn").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");
+      $$("#editChars .char").forEach((x,j)=>{const c=CHARACTERS[j];const cw=x.querySelector(".cw");if(cw)cw.innerHTML=animalHead(c,accPick);});};   // live-update previews
+    ag.appendChild(b);
   });
   $("#editCancel").onclick=closeModal;
   $("#editSave").onclick=()=>{
     const nm=($("#editName").value||"").trim();
     if(nm)S.me.name=nm;
-    S.me.charId=pickId;
+    S.me.charId=pickId; S.me.accId=accPick;
     if($("#nameInput"))$("#nameInput").value=S.me.name;                                  // keep the setup screen in sync
     $$("#charGrid .char").forEach((x,i)=>x.classList.toggle("sel",i===pickId));
+    if($("#accGrid"))$$("#accGrid .accbtn").forEach((x,i)=>x.classList.toggle("sel",i===accPick));
     if(typeof paintHomeAva==="function")paintHomeAva();
-    const me=S.players.find(p=>p.id===S.me.id); if(me){me.name=S.me.name;me.charId=S.me.charId;}
-    if(NET.online){ netRef("players/"+NET.uid+"/name").set(S.me.name); netRef("players/"+NET.uid+"/charId").set(S.me.charId); }   // others see the change
+    const me=S.players.find(p=>p.id===S.me.id); if(me){me.name=S.me.name;me.charId=S.me.charId;me.accId=S.me.accId;}
+    if(NET.online){ netRef("players/"+NET.uid+"/name").set(S.me.name); netRef("players/"+NET.uid+"/charId").set(S.me.charId); netRef("players/"+NET.uid+"/accId").set(S.me.accId); }   // others see the change
     renderLobby();
     closeModal();toast("Updated ✓");
   };
@@ -1671,7 +1745,7 @@ function netUpdateRoomList(){
 }
 function netJoinSelf(asHost){
   const me=netRef("players/"+NET.uid);
-  me.set({name:S.me.name||"Player",charId:S.me.charId,ready:!!asHost,isHost:!!asHost,score:0,joined:firebase.database.ServerValue.TIMESTAMP});
+  me.set({name:S.me.name||"Player",charId:S.me.charId,accId:S.me.accId||0,ready:!!asHost,isHost:!!asHost,score:0,joined:firebase.database.ServerValue.TIMESTAMP});
   me.onDisconnect().remove();
 }
 function netLeave(){
@@ -1725,7 +1799,7 @@ function netWatch(){
 function netBindGuesses(){ const r=netRef("guesses"); r.off("child_added"); r.on("child_added",s=>netJudge(s.val(),s.ref)); }
 function netApplyPlayers(map){
   NET.playersMap=map;
-  const arr=Object.keys(map).map(uid=>({id:uid,name:map[uid].name||"Player",charId:map[uid].charId||0,ready:!!map[uid].ready,isHost:!!map[uid].isHost,isBot:!!map[uid].isBot,skill:map[uid].skill||0.5,score:map[uid].score||0,joined:map[uid].joined||0}));
+  const arr=Object.keys(map).map(uid=>({id:uid,name:map[uid].name||"Player",charId:map[uid].charId||0,accId:map[uid].accId||0,ready:!!map[uid].ready,isHost:!!map[uid].isHost,isBot:!!map[uid].isBot,skill:map[uid].skill||0.5,score:map[uid].score||0,joined:map[uid].joined||0}));
   arr.sort((a,b)=>a.joined-b.joined);
   S.players=arr;
   Object.keys(map).forEach(uid=>{ S.champWins[uid]=map[uid].crown||0; S.pigHats[uid]=map[uid].pig||0; });   // synced crown/pig stats
