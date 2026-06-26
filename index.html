@@ -185,9 +185,11 @@ h1,h2,h3{margin:0;font-weight:600}
 .size{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);display:flex;align-items:center;justify-content:center}
 .size.sel{border-color:var(--accent);background:var(--accent-soft)}
 .size .dot{background:var(--ink);border-radius:50%}
-.palette{display:grid;grid-template-columns:repeat(16,1fr);gap:4px;padding:0 10px 8px}
+.palette{display:grid;grid-template-columns:repeat(16,1fr);gap:3px;padding:0 10px 6px;max-width:560px;margin:0 auto;width:100%}
 .toolbar.locked + .palette{opacity:.4;pointer-events:none}
-.pcell{aspect-ratio:1;border-radius:9px;border:2px solid rgba(74,63,53,.08);cursor:pointer}
+.pcell{aspect-ratio:1;max-height:17px;border-radius:5px;border:1.5px solid rgba(74,63,53,.1);cursor:pointer;transition:transform .08s}
+.pcell:hover{transform:scale(1.18)}
+.pcell.sel{border:2.5px solid var(--ink);box-shadow:0 0 0 1.5px #fff inset}
 .pcell.sel{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset}
 
 .logcol{min-height:0}
@@ -225,6 +227,7 @@ h1,h2,h3{margin:0;font-weight:600}
 .frow .rk{font-family:var(--disp);font-size:22px;width:30px;color:var(--ink-soft)}
 .frow .pts{font-family:var(--disp);font-size:20px;margin-left:auto;color:var(--accent)}
 .mutebtn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-size:16px;flex:0 0 auto}
+.mutebtn.off{opacity:.45}
 .exitbtn{width:auto;padding:0 12px;font-size:13px;font-weight:700;color:var(--ink-soft)}
 .target-tag{font-size:13px;color:var(--ink-soft);font-weight:600;white-space:nowrap}
 .cat-tag{font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-soft);border-radius:10px;padding:4px 10px;white-space:nowrap}
@@ -284,6 +287,8 @@ h1,h2,h3{margin:0;font-weight:600}
 .sidecard{padding:20px;max-height:calc(100vh - 56px);overflow:auto}
 .ready-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
 .vote-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.pick-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center}
+.pick-row .pickw{flex:1;min-width:120px;font-family:var(--disp);font-size:19px;padding:16px 12px}
 .vote-cards.scrolly{grid-template-columns:repeat(3,1fr);gap:8px;max-height:46vh;overflow-y:auto;padding:4px 4px 2px}
 .vote-cards.scrolly .vcard{padding:10px 6px;border-radius:13px}
 .vote-cards.scrolly .ve{font-size:24px}
@@ -350,7 +355,10 @@ h1,h2,h3{margin:0;font-weight:600}
         <div id="charGrid" class="char-grid"></div>
         <div class="home-sound">
           <button id="muteBtnHome" class="soundtoggle" title="Sound effects on / off">🔊 Sound: On</button>
+          <button id="bgmBtnHome" class="soundtoggle bgm-toggle off" title="Choose a song from your device">🎵 Choose music</button>
+          <button id="bgmChangeHome" class="soundtoggle" title="Pick a different song" style="display:none">🔁 Change</button>
         </div>
+        <input type="file" id="bgmFile" accept="audio/*" hidden>
       </div>
       <div class="card browser-card">
         <div class="browser-head">
@@ -389,12 +397,13 @@ h1,h2,h3{margin:0;font-weight:600}
       <p class="label" style="margin-top:14px">Default category</p>
       <div class="cats" id="catPick"></div>
       <div class="opt-row"><div class="label" style="margin:0">Time per round</div><div class="stepper"><button data-step="time" data-d="-1">−</button><b id="timeVal">50</b><button data-step="time" data-d="1">+</button></div></div>
-      <div class="opt-row" style="margin-top:8px"><div class="label" style="margin:0">Total rounds (5–30)</div><div class="stepper"><button data-step="rounds" data-d="-1">−</button><b id="roundsValL">10</b><button data-step="rounds" data-d="1">+</button></div></div>
+      <div class="opt-row" style="margin-top:8px"><div class="label" style="margin:0">Rounds (everyone draws each round)</div><div class="stepper"><button data-step="rounds" data-d="-1">−</button><b id="roundsValL">2</b><button data-step="rounds" data-d="1">+</button></div></div>
       <div class="ready-row"><span class="muted"><b id="readyCount">0</b>/<span id="readyTot">1</span> ready</span><button id="readyBtn" class="btn sm">I'm ready ✓</button></div>
       <button id="startGame" class="btn primary" style="width:100%;margin-top:12px;font-size:18px;padding:15px">Start game 🎨</button>
       <button id="addBotBtn" class="btn sm" style="width:100%;margin-top:8px;display:none">+ Add a bot 🤖</button>
       <div class="lobbychat-log" id="lobbyChatLog"></div>
       <div class="lobbychat"><input id="lobbyChatInput" class="field" placeholder="Say something to the room..." maxlength="60"><button id="lobbyChatSend" class="btn primary sm">Send</button></div>
+      <button id="bgmBtnLobby" class="btn ghost bgm-toggle off" style="width:100%;margin-top:8px" title="Background music on / off">🎵 Music: Off</button>
       <button id="leaveLobby" class="btn ghost" style="width:100%;margin-top:8px">Leave room</button>
     </div>
   </div>
@@ -425,8 +434,10 @@ h1,h2,h3{margin:0;font-weight:600}
         <span id="timeLeft">60</span>
       </div>
       <button id="muteBtn" class="mutebtn" title="Sound effects on / off">🔊</button>
+      <button id="bgmBtn" class="mutebtn bgm-toggle off" title="Background music on / off">🎵</button>
       <button id="exitBtn" class="mutebtn exitbtn" title="Exit to lobby">Exit</button>
     </div>
+    <audio id="bgmAudio" loop preload="auto"></audio>
 
     <div class="gmain">
       <div class="sidecol">
@@ -447,8 +458,8 @@ h1,h2,h3{margin:0;font-weight:600}
         </div>
         <div class="toolbar locked" id="toolbar">
           <button class="tool sel" data-tool="pen" title="Pencil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l3.5-1L20 6.5 17.5 4 4 17.5 3 21z"/></svg></button>
-          <button class="tool" data-tool="eraser" title="Eraser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15l7-7 6 6-5 5H7l-3-3z"/><path d="M9 20h11"/></svg></button>
-          <button class="tool" data-tool="fill" title="Fill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 11l6-6 7 7-6 6a2 2 0 01-3 0l-4-4a2 2 0 010-3z"/><path d="M20 16c0 1.5-1 2.5-1 2.5"/></svg></button>
+          <button class="tool" data-tool="eraser" title="Eraser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M5 15.5L13 7.5a2 2 0 012.8 0l2.7 2.7a2 2 0 010 2.8L14 18H9.5L5 15.5z"/><path d="M9.5 18H20"/><path d="M11 9.5l4.5 4.5"/></svg></button>
+          <button class="tool" data-tool="fill" title="Fill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 3l8 8-7 7a2 2 0 01-2.8 0L3 13.8a2 2 0 010-2.8l5-5z"/><path d="M8 5l-5 6h14"/><path d="M19.5 14.5c1 1.4 1.5 2.3 1.5 3a1.7 1.7 0 01-3.4 0c0-.7.5-1.6 1.5-3z" fill="currentColor" stroke="none"/></svg></button>
           <div class="sizes" id="sizes"></div>
           <button class="tool" data-tool="undo" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 7L4 12l5 5"/><path d="M4 12h11a5 5 0 010 10h-2"/></svg></button>
           <button class="tool" data-tool="clear" title="Clear"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 7h14"/><path d="M9 7V5h6v2"/><path d="M7 7l1 12h8l1-12"/></svg></button>
@@ -720,16 +731,43 @@ function sndRoundEnd(){_tone(392,.18,"triangle",.2);_tone(294,.3,"triangle",.18,
 function sndWin(){[523,659,784,1047,1319].forEach((f,i)=>_tone(f,.32,"square",.16,i*.12));}
 function sndPenalty(){_tone(150,.22,"sawtooth",.18);_tone(120,.26,"sawtooth",.16,.05);}
 function sndTurn(){_tone(523,.1,"sine",.16);_tone(784,.12,"sine",.16,.08);}
+function sndYourTurn(){[523,659,784,1047].forEach((f,i)=>_tone(f,.2,"triangle",.2,i*.11));_tone(1319,.34,"sine",.16,.46);}  // it's your turn to draw
 function sndTick(){_tone(880,.05,"sine",.1);}
 function sndUrgent(level){const base=level>=2?740:480;_tone(base,.08,"square",.16);if(level>=2)_tone(base*1.5,.09,"square",.13,.12);}
 
-/* ===== background music removed — keep sound effects only ===== */
-let bgmOn=false, bgmTimer=null;
-function startBgm(){}
-function toggleBgm(){}
+/* ===== BACKGROUND MUSIC — pick a file from YOUR device (no upload needed).
+   The chosen song is cached in the browser (IndexedDB) so it's remembered next time. ===== */
+let bgmOn=false, bgmURL=null, bgmLoaded=false;
+function bgmEl(){return document.getElementById("bgmAudio");}
+/* tiny IndexedDB store for the music blob */
+function _bgmDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open("gtw-bgm",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});}
+async function _bgmSave(blob){try{const db=await _bgmDB();await new Promise((res,rej)=>{const tx=db.transaction("f","readwrite");tx.objectStore("f").put(blob,"song");tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});}catch(e){}}
+async function _bgmGet(){try{const db=await _bgmDB();return await new Promise(res=>{const tx=db.transaction("f","readonly");const rq=tx.objectStore("f").get("song");rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>res(null);});}catch(e){return null;}}
+async function _bgmDel(){try{const db=await _bgmDB();const tx=db.transaction("f","readwrite");tx.objectStore("f").delete("song");}catch(e){}}
+function _setSong(blob){ if(bgmURL)try{URL.revokeObjectURL(bgmURL);}catch(e){} bgmURL=URL.createObjectURL(blob); const a=bgmEl(); if(a){a.src=bgmURL;a.volume=0.45;} bgmLoaded=true; }
+function pickBgm(){ const inp=document.getElementById("bgmFile"); if(inp)inp.click(); }     // open the file chooser
+function clearBgm(){ const a=bgmEl();if(a){a.pause();a.removeAttribute("src");a.load();} bgmOn=false;bgmLoaded=false; if(bgmURL){try{URL.revokeObjectURL(bgmURL);}catch(e){}bgmURL=null;} _bgmDel(); syncBgmBtns(); toast("Music removed"); }
+function startBgm(){ const a=bgmEl();if(!a||!bgmLoaded)return; const p=a.play(); if(p&&p.catch)p.catch(()=>{}); }
+function toggleBgm(){
+  if(!bgmLoaded){ pickBgm(); return; }        // no song yet -> choose one
+  bgmOn=!bgmOn; const a=bgmEl();
+  if(bgmOn)startBgm(); else if(a)a.pause();
+  syncBgmBtns();
+}
 function cycleBgmTrack(){}
-function syncBgmBtns(){}
-document.addEventListener("pointerdown",()=>{const a=_audio();if(a&&a.state==="suspended")a.resume();},{once:false});  // unlock audio for SFX
+function syncBgmBtns(){
+  const label = !bgmLoaded ? "🎵 Choose music" : (bgmOn ? "🎵 Music: On" : "🎵 Music: Off");
+  $$(".bgm-toggle").forEach(b=>{ b.classList.toggle("off",!bgmOn);
+    if(b.id==="bgmBtnHome"||b.id==="bgmBtnLobby")b.textContent=label;
+  });
+  const ch=document.getElementById("bgmChangeHome"); if(ch)ch.style.display=bgmLoaded?"inline-flex":"none";
+}
+async function initBgm(){
+  const blob=await _bgmGet();
+  if(blob){ _setSong(blob); }     // remembered from a previous visit (won't autoplay until you press play)
+  syncBgmBtns();
+}
+document.addEventListener("pointerdown",()=>{ const a=_audio();if(a&&a.state==="suspended")a.resume(); if(bgmOn){const m=bgmEl();if(m&&m.paused)startBgm();} },{once:false});  // unlock + resume music on interaction
 
 
 /* =================== TEXT HELPERS =================== */
@@ -780,7 +818,7 @@ function setHintText(t){const el=$("#wordHint");if(el){el.innerHTML="";el.textCo
 let S={
   me:{id:"me",name:"",charId:0},
   room:{code:"",pass:""}, players:[],
-  cat:"animals", roundTime:50, botCount:3, target:1000, maxRounds:10, totalRounds:0, gameOver:false,
+  cat:"animals", roundTime:50, botCount:3, target:1000, maxRounds:2, totalRounds:0, gameOver:false,
   roundNo:0, order:[], turnPtr:-1, myPos:null,
   word:"", segs:[], choices:[], revealMask:[], drawerId:null, usedWords:new Set(),
   timeLeft:0, tickId:null, botDrawId:null, phaseTimer:null, lobbyTimer:null,
@@ -976,6 +1014,22 @@ document.addEventListener("keydown",e=>{
   S.myPos=[Math.max(8,Math.min(92,S.myPos[0]+dx*3.4)),Math.max(30,Math.min(90,S.myPos[1]+dy*3.4))];
   const el=$("#meSeat");if(el){el.style.left=S.myPos[0]+"%";el.style.top=S.myPos[1]+"%";}
 });
+/* shortcuts: Ctrl/Cmd+Z = undo (drawer), Alt+1..0,-,= = emotes (room) — uses e.code so Thai/English layouts both work */
+const EMO_CODES=["Digit1","Digit2","Digit3","Digit4","Digit5","Digit6","Digit7","Digit8","Digit9","Digit0","Minus","Equal"];
+document.addEventListener("keydown",e=>{
+  const ae=document.activeElement,typing=ae&&/INPUT|TEXTAREA/.test(ae.tagName);
+  if((e.ctrlKey||e.metaKey)&&!e.altKey&&(e.code==="KeyZ"||e.key==="z"||e.key==="Z"||e.key==="ผ")){   // undo
+    if(typing)return;
+    if($("#game").classList.contains("on")&&S.drawerId===S.me.id){e.preventDefault();undo();}   // local undo (matches the toolbar button)
+    return;
+  }
+  if(e.altKey){                                                                                       // emotes
+    const i=EMO_CODES.indexOf(e.code);
+    if(i>=0&&REKEYS[i]&&($("#lobby").classList.contains("on")||$("#game").classList.contains("on"))){
+      e.preventDefault();const t=REKEYS[i];emote(S.me.id,t);netPushEmote(t);
+    }
+  }
+});
 function lobbyAddBots(){
   S.players=S.players.filter(p=>!p.isBot);   // bots removed — real players only
 }
@@ -989,13 +1043,13 @@ function renderLobby(){
     const el=document.createElement("div");
     if(isMe)el.id="meSeat";
     el.dataset.pid=p.id;
-    el.className="seat"+(isMe?" me":"")+(!isMe&&!p.isHost?" kickable":"");
+    el.className="seat"+(isMe?" me":"")+(amHost()&&!isMe?" kickable":"");
     el.style.left=pos[0]+"%";el.style.top=pos[1]+"%";
     el.innerHTML=`${headBadgeHTML(p)}<div class="seat-fig">${animalFigure(charOf(p))}</div>
       <div class="seat-name">${esc(p.name)}</div>
       ${p.isHost?'<span class="htag">HOST</span>':''}
       <span class="seat-badge ${p.ready?'ready':'wait'}">${p.ready?'✓':'…'}</span>`;
-    if(!isMe&&!p.isHost)el.onclick=()=>voteKick(p);
+    if(amHost()&&!isMe)el.onclick=()=>voteKick(p);
     seats.appendChild(el);
   });
   $("#pcount").textContent=S.players.length;
@@ -1047,41 +1101,20 @@ $("#roomPass").addEventListener("input",e=>{S.room.pass=e.target.value.trim();$(
 $$('.stepper button').forEach(b=>b.onclick=()=>{
   const d=+b.dataset.d;
   if(b.dataset.step==="time"){S.roundTime=Math.max(30,Math.min(120,S.roundTime+d*10));$("#timeVal").textContent=S.roundTime;if(NET.online&&NET.isHost)netSetMeta("roundTime",S.roundTime);}
-  else if(b.dataset.step==="rounds"){const opts=[5,10,15,20,30];let i=opts.indexOf(S.maxRounds);if(i<0)i=1;i=Math.max(0,Math.min(opts.length-1,i+d));S.maxRounds=opts[i];$("#roundsValL").textContent=S.maxRounds;if(NET.online&&NET.isHost)netSetMeta("maxRounds",S.maxRounds);}
+  else if(b.dataset.step==="rounds"){const opts=[1,2,3,4,5];let i=opts.indexOf(S.maxRounds);if(i<0)i=1;i=Math.max(0,Math.min(opts.length-1,i+d));S.maxRounds=opts[i];$("#roundsValL").textContent=S.maxRounds;if(NET.online&&NET.isHost)netSetMeta("maxRounds",S.maxRounds);}
 });
 $("#readyBtn").onclick=()=>{const meE=S.players.find(p=>p.id===S.me.id);if(NET.online){netSetReady(!(meE&&meE.ready));return;}if(meE){meE.ready=!meE.ready;renderLobby();}};
 $("#leaveLobby").onclick=()=>{ if(NET.online)netLeave(); clearInterval(S.lobbyTimer); S.players=[]; const lg=$("#lobbyChatLog");if(lg)lg.innerHTML=""; show("home"); };
 
+function amHost(){ return NET.online ? NET.isHost : !!((S.players.find(p=>p.id===S.me.id)||{}).isHost); }
 function voteKick(p){
-  if(NET.online){ if(NET.isHost&&p.id!==NET.uid){netRef("players/"+p.id).remove();toast("Removed "+p.name);} else toast("Only the host can remove players"); return; }
-  openModal(`<h2 class="disp">Kick ${esc(p.name)}?</h2>
-    <p class="muted">Needs a majority of players</p>
-    <div class="vote-tally" id="tally"></div>
-    <div class="row"><button class="btn" id="vCancel">Cancel</button><button class="btn hot" id="vGo">Start vote</button></div>`);
-  $("#vCancel").onclick=closeModal;
-  $("#vGo").onclick=()=>{
-    $("#vGo").disabled=true;$("#vCancel").disabled=true;
-    const voters=S.players.filter(x=>x.id!==p.id);let yes=1,done=0;
-    const tally=$("#tally");tally.innerHTML=`<div class="v">🫵 You — <b style="color:var(--hot)">Kick</b></div>`;
-    const others=voters.filter(x=>x.id!==S.me.id);
-    if(others.length===0){finishVote();return;}
-    others.forEach((v,i)=>setTimeout(()=>{
-      const ok=Math.random()<0.7;if(ok)yes++;done++;
-      const r=document.createElement("div");r.className="v";
-      r.innerHTML=`${avaHTML(v)} ${esc(v.name)} — <b style="color:${ok?'var(--hot)':'var(--ink-soft)'}">${ok?'Kick':'Keep'}</b>`;
-      tally.appendChild(r);
-      if(done===others.length)setTimeout(finishVote,500);
-    },350+i*450));
-    function finishVote(){
-      const need=Math.floor(voters.length/2)+1;
-      if(yes>=need){
-        S.players=S.players.filter(x=>x.id!==p.id);
-        if(S.roundActive){renderScores();if(p.id===S.drawerId)endRound("Drawer was kicked");}
-        else renderLobby();
-        closeModal();toast(`${p.name} was kicked (${yes}/${voters.length})`);
-      }else{closeModal();toast(`Vote failed (${yes}/${voters.length})`);}
-    }
-  };
+  if(!amHost()){ toast("Only the host can remove players"); return; }
+  if(!p||p.id===S.me.id)return;
+  if(NET.online){ netRef("players/"+p.id).remove(); toast("Removed "+p.name); return; }
+  S.players=S.players.filter(x=>x.id!==p.id);   // offline immediate kick
+  if($("#lobby").classList.contains("on"))renderLobby();
+  if($("#game").classList.contains("on"))renderScores();
+  toast("Removed "+p.name);
 }
 
 /* =================== START GAME =================== */
@@ -1093,13 +1126,20 @@ function startMatch(){
   clearInterval(S.lobbyTimer);
   S.players.forEach(p=>p.score=0);
   S.roundNo=0;S.turnPtr=-1;S.gameOver=false;S.usedWords=new Set();
-  S.totalRounds=S.maxRounds;
+  S.totalRounds=S.maxRounds*Math.max(1,S.players.length);   // each player draws maxRounds times
   $("#roundTot").textContent=S.totalRounds;updateCatTag();
   $("#guessfeed").innerHTML="";$("#logList").innerHTML="";
   show("game");setupBoard();buildToolUI();renderScores();
   setTimeout(numberRollStart,350);
 }
 /* pre-game MODE VOTE: large cards, real-time counts, tie=random, instant start when all voted */
+/* play-again chooser: vote a new category or pick a random one */
+function askAgainChoice(onVote,onRandom){
+  openModal(`<h2 class="disp">Play again</h2><p class="muted">How should the next category be chosen?</p>
+    <div class="row" style="margin-top:16px"><button class="btn primary" id="agVote" style="flex:1">🗳️ Vote category</button><button class="btn" id="agRandom" style="flex:1">🎲 Random</button></div>`);
+  $("#agVote").onclick=()=>{closeModal();onVote&&onVote();};
+  $("#agRandom").onclick=()=>{closeModal();onRandom&&onRandom();};
+}
 function modeVotePre(){
   const keys=CATS.map(c=>c.key);   // ALL categories
   const votes={};keys.forEach(k=>votes[k]=0);
@@ -1168,7 +1208,7 @@ function setupBoard(){
   const start=e=>{
     if(!canDraw())return;
     const p=evToCanvas(e);
-    if(tool==="fill"){floodFill(Math.round(p.x),Math.round(p.y),penColor);pushUndo();if(NET.online&&S.drawerId===S.me.id&&board)netPushStroke({fill:1,fx:p.x/board.width,fy:p.y/board.height,c:penColor});return;}
+    if(tool==="fill"){pushUndo();floodFill(Math.round(p.x),Math.round(p.y),penColor);if(NET.online&&S.drawerId===S.me.id&&board)netPushStroke({fill:1,fx:p.x/board.width,fy:p.y/board.height,c:penColor});return;}
     drawing=true;last=p;pushUndo();stroke(p,p);e.preventDefault();
   };
   const move=e=>{if(!drawing||!canDraw())return;const p=evToCanvas(e);stroke(last,p);last=p;e.preventDefault();};
@@ -1197,7 +1237,7 @@ function stroke(a,b){
 }
 function pushUndo(){try{undoStack.push(ctx.getImageData(0,0,board.width,board.height));if(undoStack.length>15)undoStack.shift();}catch(e){}}
 function undo(){if(undoStack.length)ctx.putImageData(undoStack.pop(),0,0);}
-function clearBoard(){ctx.fillStyle="#fff";ctx.fillRect(0,0,board.width,board.height);undoStack=[];}
+function clearBoard(keepUndo){ctx.fillStyle="#fff";ctx.fillRect(0,0,board.width,board.height);if(!keepUndo)undoStack=[];}
 function hexRGB(h){h=h.replace("#","");return{r:parseInt(h.slice(0,2),16),g:parseInt(h.slice(2,4),16),b:parseInt(h.slice(4,6),16)};}
 function floodFill(sx,sy,hex){
   const w=board.width,h=board.height;if(sx<0||sy<0||sx>=w||sy>=h)return;
@@ -1230,7 +1270,7 @@ function buildToolUI(){
     b.onclick=()=>{penColor=c;tool="pen";selTool("pen");$$("#palette .pcell").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");};
     pal.appendChild(b);
   });
-  $$(".tool").forEach(b=>b.onclick=()=>{const t=b.dataset.tool;if(t==="undo"){undo();return;}if(t==="clear"){pushUndo();clearBoard();if(NET.online&&S.drawerId===S.me.id)netPushStroke({clear:1});return;}tool=t;selTool(t);});
+  $$(".tool").forEach(b=>b.onclick=()=>{const t=b.dataset.tool;if(t==="undo"){undo();return;}if(t==="clear"){pushUndo();clearBoard(true);if(NET.online&&S.drawerId===S.me.id)netPushStroke({clear:1});return;}tool=t;selTool(t);});
 }
 function selTool(t){$$(".tool").forEach(x=>x.classList.toggle("sel",x.dataset.tool===t));}
 function setToolsLocked(locked){
@@ -1285,6 +1325,7 @@ function beginRound(word){
   const meDraw=S.drawerId===S.me.id;const drawer=S.players.find(p=>p.id===S.drawerId);
   clearBoard();renderScores();setToolsLocked(!meDraw);resetHourglass();
   if(meDraw){
+    sndYourTurn();
     showCenter(`<div class="big">Your turn to draw!</div><div class="reveal">${esc(word)}</div><div class="word-sub" style="margin-top:8px">Category: ${CAT_NAME[S.cat]}</div>`,1700);
     setWordHint(S.segs,null,true);$("#wordSub").textContent="Draw this word for others";
     $("#guessInput").disabled=true;$("#guessInput").placeholder="You're drawing";
@@ -1402,6 +1443,18 @@ function syncMuteBtns(){const g=$("#muteBtn");if(g)g.textContent=_muted?"🔇":"
 function toggleMute(){_muted=!_muted;syncMuteBtns();if(!_muted)sndTurn();}
 $("#muteBtn").onclick=toggleMute;
 $("#muteBtnHome").onclick=toggleMute;
+["#bgmBtn","#bgmBtnHome","#bgmBtnLobby"].forEach(id=>{const b=$(id);if(b)b.onclick=toggleBgm;});
+{ const ch=$("#bgmChangeHome"); if(ch)ch.onclick=pickBgm; }
+{ const inp=$("#bgmFile");
+  if(inp)inp.addEventListener("change",e=>{
+    const f=e.target.files&&e.target.files[0]; if(!f)return;
+    _setSong(f); _bgmSave(f);            // remember for next time
+    bgmOn=true; startBgm(); syncBgmBtns();
+    toast("🎵 "+(f.name.length>26?f.name.slice(0,24)+"…":f.name));
+    e.target.value="";                   // allow re-picking the same file later
+  });
+}
+initBgm();
 function updateCatTag(){const c=CATS.find(x=>x.key===S.cat);if(c&&$("#catTag"))$("#catTag").textContent=`${c.emoji} ${c.name}`;}
 $("#exitBtn").onclick=exitGame;
 function exitGame(){
@@ -1467,7 +1520,7 @@ function endGame(){
     <div class="final-list">${list}</div>
     <p class="muted" style="margin-top:6px;font-size:12px">👑 crown = top score · 🐷 pig hat = last place (ties share)</p>
     <div class="row"><button class="btn primary" id="againBtn" style="flex:1">Play again 🎲</button><button class="btn" id="backLobby" style="flex:1">Return to lobby</button></div>`);
-  $("#againBtn").onclick=()=>{closeModal();modeVotePre();};   // host plays on -> new mode vote
+  $("#againBtn").onclick=()=>{closeModal();askAgainChoice(()=>modeVotePre(),()=>{S.cat=rand(CATS.map(c=>c.key));toast("🎲 "+CAT_NAME[S.cat]);startMatch();});};
   $("#backLobby").onclick=()=>returnToLobby();
 }
 function returnToLobby(){
@@ -1487,7 +1540,7 @@ function renderScores(){
     row.className="srow"+(S.guessedThisRound&&S.guessedThisRound.has(p.id)?" solved":"")+(p.id===S.drawerId?" draw":"");
     row.innerHTML=`<span class="ava-wrap">${avaHTML(p)}${avaBadgeHTML(p)}</span><span class="nm">${esc(p.name)}${p.id===S.me.id?' (you)':''}</span>
       ${p.id===S.drawerId?'<span class="mini">✏️</span>':''}<span class="pts">${p.score}</span>`;
-    if(p.id!==S.me.id&&p.id!==S.drawerId){const k=document.createElement("button");k.className="skick";k.textContent="kick";k.title="Vote kick";k.onclick=()=>voteKick(p);row.appendChild(k);}
+    if(amHost()&&p.id!==S.me.id){const k=document.createElement("button");k.className="skick";k.textContent="kick";k.title="Remove player";k.onclick=()=>voteKick(p);row.appendChild(k);}
     list.appendChild(row);
   });
   const led=$("#leaderName");if(led)led.textContent=(sorted[0]&&sorted[0].score>0)?sorted[0].name:"—";
@@ -1601,14 +1654,30 @@ function netLeave(){
   NET.online=false;NET.code=null;NET.base=null;NET.isHost=false;NET.lastRound=null;NET.playersMap={};
   S.champWins={};S.pigHats={};   // crown/pig stats reset on leaving the room
 }
+/* tab close / refresh: remove self & hand off host right away (onDisconnect is the server-side safety net) */
+window.addEventListener("pagehide",()=>{
+  if(!NET.online)return;
+  try{
+    if(NET.isHost){
+      const ids=Object.keys(NET.playersMap||{}).filter(id=>id!==NET.uid&&!(NET.playersMap[id]||{}).isBot)
+        .sort((a,b)=>((NET.playersMap[a]||{}).joined||0)-((NET.playersMap[b]||{}).joined||0));
+      if(ids.length){ netRef("meta/host").set(ids[0]); netRef("players/"+ids[0]+"/isHost").set(true); }
+      else if(NET.code){ netRef().remove(); firebase.database().ref("roomList/"+NET.code).remove(); }
+    }
+    netRef("players/"+NET.uid).remove();
+  }catch(e){}
+});
 
 /* ---------- watchers ---------- */
 function netWatch(){
+  netRef().off();   // drop any stale listeners first (prevents duplicate events on re-join)
   netRef("players").on("value",s=>netApplyPlayers(s.val()||{}));
   netRef("meta").on("value",s=>netApplyMeta(s.val()||{}));
   netRef("game").on("value",s=>{ if(!NET.isHost)netApplyGame(s.val()); });
   netRef("strokes").on("child_added",s=>netApplyStroke(s.val()));
-  netRef("chat").on("child_added",s=>netApplyChat(s.val()));
+  let chatPrimed=false;
+  netRef("chat").on("value",()=>{chatPrimed=true;});                     // fires once after initial history load
+  netRef("chat").on("child_added",s=>{ if(chatPrimed)netApplyChat(s.val()); });   // only live messages — never replay old answers
   netRef("emotes").on("child_added",s=>{const e=s.val();if(e&&e.id&&e.t&&e.id!==NET.uid)emote(e.id,e.t);});
   let lcPrimed=false;
   netRef("lobbyChat").on("value",()=>{lcPrimed=true;});   // fires once after initial history replay
@@ -1636,6 +1705,15 @@ function netApplyMeta(meta){
   if(!meta)return;
   NET.hostUid=meta.host;NET.metaPhase=meta.phase||"lobby";
   if(meta.cat)S.cat=meta.cat;if(meta.roundTime)S.roundTime=meta.roundTime;if(meta.maxRounds)S.maxRounds=meta.maxRounds;
+  if(meta.host===NET.uid && !NET.isHost){            // I was just handed the host role (graceful transfer) -> take over the game loop
+    NET.isHost=true;NET.hostUid=NET.uid;
+    netBindGuesses();
+    toast("You're the host now 👑");
+    if($("#lobby").classList.contains("on"))renderLobby();
+    netResumeHostIfPlaying();
+    netUpdateRoomList();
+    return;
+  }
   netMaybeElect();
   if(NET.isHost)netUpdateRoomList();
   if(!NET.isHost){
@@ -1670,9 +1748,16 @@ function netClaimHost(){
 async function netResumeHostIfPlaying(){
   if(NET.metaPhase!=="playing")return;
   let gs;try{ gs=(await netRef("game").get()).val(); }catch(e){ return; }
-  if(!gs||gs.phase!=="playing")return;
-  S.totalRounds=gs.totalRounds;S.roundNo=gs.roundNo;S.cat=gs.cat;S.drawerId=gs.drawerId;S.timeLeft=gs.timeLeft||0;
+  if(!gs)return;
+  S.totalRounds=gs.totalRounds||S.totalRounds;S.cat=gs.cat||S.cat;
   S.order=Object.keys(NET.playersMap).sort((a,b)=>(NET.playersMap[a].joined||0)-(NET.playersMap[b].joined||0));
+  clearInterval(S.tickId);
+  if(gs.phase!=="playing"){                         // host dropped during pick/roll/vote -> redo this turn cleanly
+    S.roundNo=Math.max(0,(gs.roundNo||1)-1);
+    S.turnPtr=Math.max(-1,S.order.indexOf(gs.drawerId)-1);
+    return netNextTurnHost();
+  }
+  S.roundNo=gs.roundNo;S.drawerId=gs.drawerId;S.timeLeft=gs.timeLeft||0;
   S.turnPtr=Math.max(0,S.order.indexOf(S.drawerId));
   S.guessedThisRound=new Set(Object.keys(gs.solved||{}));
   S.roundActive=!gs.reason;
@@ -1691,7 +1776,7 @@ function netSetMeta(k,v){ if(NET.online&&NET.isHost)netRef("meta/"+k).set(v); }
 function netStartGame(){
   if(!(NET.online&&NET.isHost))return false;
   S.players.forEach(p=>{p.score=0;netRef("players/"+p.id+"/score").set(0);});
-  S.totalRounds=S.maxRounds;S.roundNo=0;S.gameOver=false;S.turnPtr=-1;S.usedWords=new Set();
+  S.totalRounds=S.maxRounds*Math.max(1,S.players.length);S.roundNo=0;S.gameOver=false;S.turnPtr=-1;S.usedWords=new Set();
   const rolls=makeRolls(S.players);S.order=orderFromRolls(rolls);
   netRef("chat").remove();netRef("strokes").remove();netRef("guesses").remove();
   netRef("meta/phase").set("playing");
@@ -1761,22 +1846,62 @@ function netNextTurnHost(){
   S.drawerId=S.order[S.turnPtr];
   const drawerP=S.players.find(p=>p.id===S.drawerId);
   const choices=pickChoices(S.cat,S.drawerId,3);
-  if(drawerP&&drawerP.isBot){                       // bots prefer words they can actually draw
+  if(drawerP&&drawerP.isBot){                       // bots auto-pick a word they can draw
     const dW=choices.filter(w=>doodleFor(w));
-    S.word=dW.length?rand(dW):rand(choices);
-  } else S.word=rand(choices);
-  lockWord(S.word);
+    netBeginRoundHost(dW.length?rand(dW):rand(choices));
+    return;
+  }
+  netStartPickHost(choices);                        // human drawer chooses from 3 (10s, else auto)
+}
+function netStartPickHost(choices){
+  NET._pickDone=false;
+  netRef("strokes").remove();clearBoard();
+  netRef("secret/choices").set(choices);            // readable only by host & drawer (rules)
+  netRef("secret/pick").remove();
+  const deadline=Date.now()+PICK_WAIT*1000;
+  S.roundActive=false;
+  netRef("game").set({phase:"pick",drawerId:S.drawerId,drawerName:(S.players.find(p=>p.id===S.drawerId)||{}).name||"Player",roundNo:S.roundNo,totalRounds:S.totalRounds,cat:S.cat,deadline});
+  if(S.drawerId===S.me.id)netRenderPick(choices,deadline);   // host is the drawer -> pick locally
+  netRef("secret/pick").off();
+  netRef("secret/pick").on("value",s=>{ const w=s&&s.val(); if(w&&choices.indexOf(w)>=0)netResolvePick(w); });
+  clearTimeout(NET._pickTimer);
+  NET._pickTimer=setTimeout(()=>{ netResolvePick(rand(choices)); toast("⏱️ Auto-picked a word"); },PICK_WAIT*1000+500);   // no choice -> random
+}
+function netResolvePick(word){
+  if(NET._pickDone)return;NET._pickDone=true;
+  clearTimeout(NET._pickTimer);try{netRef("secret/pick").off();}catch(e){}
+  netRef("secret/pick").remove();netRef("secret/choices").remove();
+  if($("#modal")&&$("#modal").closest&&document.querySelector("#modal .pickw"))closeModal();
+  netBeginRoundHost(word);
+}
+function netBeginRoundHost(word){
+  S.word=word;lockWord(word);
   S.segs=thaiSegs(S.word);S.revealMask=S.segs.map(s=>s===" ");
   S.guessedThisRound=new Set();
   S.timeLeft=S.roundTime;S.roundActive=true;S.hintPhase=0;
   netRef("secret/word").set(S.word);            // hidden — only host & drawer can read (rules)
   netRef("strokes").remove();clearBoard();
   netPushGameHost("","");
-  const rn=S.roundNo;
+  const rn=S.roundNo,drawerP=S.players.find(p=>p.id===S.drawerId);
   if(drawerP&&drawerP.isBot)setTimeout(()=>{ if(S.roundActive&&S.roundNo===rn)netBotDraw(S.word,S.drawerId,rn); },900);  // bot draws a doodle
   netScheduleBotGuesses(rn);                                                                                            // bots may guess
   clearInterval(S.tickId);S.tickId=setInterval(netTickHost,1000);
+  if(S.drawerId===S.me.id){setWordHint(thaiSegs(S.word),null,true);showDrawerWord(S.word);}
   sndTurn();
+}
+/* pick UI (host-as-drawer or remote drawer) */
+let _pickTick=null;
+function netRenderPick(choices,deadline){
+  clearInterval(_pickTick);
+  const draw=()=>{
+    const left=Math.max(0,Math.ceil((deadline-Date.now())/1000));
+    openModal(`<h2 class="disp">Pick a word to draw</h2><p class="muted">Choose within <b>${left}</b>s · else one is picked for you</p>
+      <div class="pick-row">${choices.map(w=>`<button class="btn pickw" data-w="${esc(w)}">${esc(w)}</button>`).join("")}</div>`);
+    $$("#modal .pickw").forEach(b=>b.onclick=()=>{ const w=b.dataset.w;clearInterval(_pickTick);closeModal();
+      if(NET.isHost)netResolvePick(w); else { try{netRef("secret/pick").set(w);}catch(e){} showCenter(`<div class="big">Get ready…</div>`,800); } });
+    if(left<=0)clearInterval(_pickTick);
+  };
+  draw();_pickTick=setInterval(draw,1000);
 }
 function netTickHost(){
   S.timeLeft--;
@@ -1847,14 +1972,15 @@ function netJudge(g,ref){
   if(norm(g.text)===norm(S.word)){
     netAwardCorrect(g.uid,g.name,g.char);
   } else {
-    netChatRaw({kind:isClose(g.text,S.word)?"close":"say",name:g.name,char:g.char,text:g.text});
+    netChatRaw({kind:isClose(g.text,S.word)?"close":"say",uid:g.uid,name:g.name,char:g.char,text:g.text});
   }
   ref&&ref.remove();
 }
 function netApplyChat(c){
   if(!c)return;const fake={name:c.name,charId:c.char||0};
-  if(c.kind==="correct"){chat(c.name,"guessed it! +"+c.pts,fake,"correct");sndCorrect();}
-  else chat(c.name,c.text,fake,c.kind==="close"?"close":"");
+  if(c.kind==="correct"){chat(c.name,"guessed it! +"+c.pts,fake,"correct");sndCorrect();return;}
+  if(c.kind==="close"){ if(c.uid===NET.uid){ chat(c.name,c.text,fake,"close"); sysMsg("So close! 🔥"); } return; }   // close hint shown only to the guesser
+  chat(c.name,c.text,fake,"");
 }
 
 /* ---------- strokes ---------- */
@@ -1868,30 +1994,52 @@ function netApplyStroke(s){
 }
 
 /* ---------- client/host render game state ---------- */
+function netFetchSecret(roundNo,tries){
+  tries=tries||0;
+  netRef("secret/word").get().then(s=>{
+    if(s&&s.exists()&&s.val()){ S.word=s.val(); if(S.drawerId===S.me.id){ setWordHint(thaiSegs(S.word),null,true); showDrawerWord(S.word); } }
+    else if(tries<6 && S.drawerId===S.me.id){ setTimeout(()=>netFetchSecret(roundNo,tries+1),300); }   // word not written yet — retry
+  }).catch(()=>{ if(tries<6 && S.drawerId===S.me.id)setTimeout(()=>netFetchSecret(roundNo,tries+1),300); });
+}
+function showDrawerWord(w){ if(w)showCenter(`<div class="big">Your turn to draw!</div><div class="reveal">${esc(w)}</div><div class="word-sub" style="margin-top:8px">Draw it for the others</div>`,1700); }
 function netApplyGame(g){
   if(!g)return;
+  if(g.phase!=="catvote"&&_catVoteTick)netCatVoteCleanup();   // leaving vote phase
+  if(g.phase!=="pick"&&_pickTick){clearInterval(_pickTick);_pickTick=null;}   // leaving pick phase
   if(g.phase==="ended"){netShowEnd(g);return;}
+  if(g.phase==="catvote"){ netApplyCatVote(g); return; }       // clients render the category vote
+  if(g.phase==="pick"){
+    if(!$("#game").classList.contains("on"))netEnterGame();
+    if(board)clearBoard();
+    S.drawerId=g.drawerId;S.roundActive=false;setToolsLocked(true);$("#guessInput").disabled=true;
+    if(g.drawerId===S.me.id){                                  // I'm the drawer -> fetch my 3 choices & pick
+      netRef("secret/choices").get().then(s=>{ const ch=s&&s.val(); if(ch&&ch.length)netRenderPick(ch,g.deadline); }).catch(()=>{});
+    }else{
+      showCenter(`<div class="big">${esc(g.drawerName||"Player")} is choosing a word…</div><div class="word-sub" style="margin-top:6px">Get ready to guess!</div>`,0);
+    }
+    return;
+  }
   if(g.phase==="roll"){
     if(!NET.isHost){ if(!$("#game").classList.contains("on"))netEnterGame(); if(!NET.rolling){NET.rolling=true;rollOrderAnim(g.rolls||{},()=>{NET.rolling=false;});} }
     return;
   }
   if(!$("#game").classList.contains("on"))netEnterGame();
   if(NET.rolling){NET.rolling=false;closeModal();}                                     // roll done, game starting
-  if(NET.lastRound!==g.roundNo){ if(board)clearBoard(); NET.lastRound=g.roundNo; }   // clear on new turn (host + clients)
+  const isNewRound=(NET.lastRound!==g.roundNo);
+  if(isNewRound){ if(board)clearBoard(); NET.lastRound=g.roundNo; }   // clear on new turn (host + clients)
   S.roundNo=g.roundNo;S.totalRounds=g.totalRounds;S.cat=g.cat;S.drawerId=g.drawerId;S.timeLeft=g.timeLeft;
   S.guessedThisRound=new Set(Object.keys(g.solved||{}));
   S.roundActive=!g.reason;
   $("#roundNo").textContent=g.roundNo;$("#roundTot").textContent=g.totalRounds;updateCatTag();
   $("#timeLeft").textContent=Math.max(0,g.timeLeft);
   const amDrawer=(g.drawerId===S.me.id);
+  if(isNewRound&&amDrawer&&S.roundActive)sndYourTurn();   // your turn to draw
   if(amDrawer){
-    if(NET.isHost){ setWordHint(thaiSegs(S.word),null,true); }
-    else if(NET.wordRound!==g.roundNo){
-      NET.wordRound=g.roundNo;
-      netRef("secret/word").get().then(s=>{ if(s&&s.exists()){ S.word=s.val(); if(S.drawerId===S.me.id)setWordHint(thaiSegs(S.word),null,true); } }).catch(()=>{});
-    } else if(S.word){ setWordHint(thaiSegs(S.word),null,true); }
+    if(NET.isHost){ if(S.word){setWordHint(thaiSegs(S.word),null,true);if(isNewRound)showDrawerWord(S.word);} }
+    else if(NET.wordRound!==g.roundNo){ NET.wordRound=g.roundNo; netFetchSecret(g.roundNo); }   // retry-fetch the word
+    else if(S.word){ setWordHint(thaiSegs(S.word),null,true); }
   } else {
-    if(!NET.isHost)S.word="";
+    if(!NET.isHost){S.word="";S.segs=[];}                // non-host guessers NEVER hold the answer (safe from dev tools)
     const mk=g.mask||"";
     if(!mk){ setHintText("•   •   •"); $("#wordSub").textContent=`Guess! · ${CAT_NAME[g.cat||S.cat]}`; }
     else { setMaskHint(mk); const n=mk.split(" ").filter(t=>t&&t!=="/").length; $("#wordSub").textContent=`${n} letters · ${CAT_NAME[g.cat||S.cat]}`; }
@@ -1915,11 +2063,62 @@ function netShowEnd(g){
     <div class="final-list">${list}</div><p class="muted" style="margin-top:6px;font-size:12px">👑 top score · 🐷 last place (ties share)</p>${ctrl}`);
   sndWin();
   if(NET.isHost){
-    $("#againBtn").onclick=()=>{closeModal();netStartGame();};
+    $("#againBtn").onclick=()=>{closeModal();askAgainChoice(()=>netCatVoteHost(),()=>{S.cat=rand(CATS.map(c=>c.key));netRef("meta/cat").set(S.cat);toast("🎲 "+CAT_NAME[S.cat]);netStartGame();});};
     $("#backLobby").onclick=()=>{closeModal();netRef("meta/phase").set("lobby");netRef("game").remove();show("lobby");renderLobby();};
   }
 }
 function netPushEmote(t){ if(NET.online)netRef("emotes").push({id:NET.uid,t,at:firebase.database.ServerValue.TIMESTAMP}); }
+
+/* ---------- online category vote (host-authoritative, 15s) ---------- */
+let _catVoteMine=null,_catVoteState=null,_catVoteTick=null;
+function netCatVoteHost(){
+  if(!(NET.online&&NET.isHost))return;
+  const opts=CATS.map(c=>c.key);
+  NET._catDone=false;_catVoteMine=null;
+  try{netRef("catvote").remove();}catch(e){}
+  const deadline=Date.now()+15000;
+  netRef("game").set({phase:"catvote",options:opts,deadline,votes:{}});
+  netApplyCatVote({phase:"catvote",options:opts,deadline,votes:{}});                 // host renders too
+  S.players.filter(p=>p.isBot).forEach(b=>setTimeout(()=>{ if(NET._catDone)return; try{netRef("catvote/"+b.id).set(rand(opts));}catch(e){} },(0.8+Math.random()*11)*1000));
+  netRef("catvote").on("value",s=>{
+    const votes=s.val()||{};
+    try{netRef("game/votes").set(votes);}catch(e){}                                  // broadcast live counts
+    if(_catVoteState)_catVoteState=Object.assign({},_catVoteState,{votes});           // host live refresh (via tick)
+    const total=Object.keys(NET.playersMap||{}).length;
+    if(Object.keys(votes).length>=total && total>0)netFinishCatVote(opts,votes);
+  });
+  clearTimeout(NET._catTimer);
+  NET._catTimer=setTimeout(()=>{ netRef("catvote").get().then(s=>netFinishCatVote(opts,s.val()||{})).catch(()=>netFinishCatVote(opts,{})); },15200);
+}
+function netFinishCatVote(opts,votes){
+  if(NET._catDone)return;NET._catDone=true;
+  clearTimeout(NET._catTimer);try{netRef("catvote").off();}catch(e){}
+  netCatVoteCleanup();
+  const tally={};opts.forEach(k=>tally[k]=0);Object.values(votes||{}).forEach(v=>{if(tally[v]!=null)tally[v]++;});
+  const mx=Math.max(...opts.map(k=>tally[k]));
+  const winners=opts.filter(k=>tally[k]===mx);
+  S.cat=rand(winners.length?winners:opts);
+  try{netRef("catvote").remove();}catch(e){}
+  netRef("meta/cat").set(S.cat);
+  toast("Category: "+CAT_NAME[S.cat]);
+  netStartGame();
+}
+function netCatVoteCleanup(){ if(_catVoteTick){clearInterval(_catVoteTick);_catVoteTick=null;} _catVoteState=null; }
+function netApplyCatVote(g){
+  if(!$("#game").classList.contains("on"))netEnterGame();
+  _catVoteState=g;renderCatVote();
+  if(!_catVoteTick)_catVoteTick=setInterval(renderCatVote,1000);
+}
+function renderCatVote(){
+  const g=_catVoteState;if(!g){netCatVoteCleanup();return;}
+  const opts=g.options||CATS.map(c=>c.key);const votes=g.votes||{};
+  const counts={};opts.forEach(k=>counts[k]=0);Object.values(votes).forEach(v=>{if(counts[v]!=null)counts[v]++;});
+  const left=Math.max(0,Math.ceil(((g.deadline||Date.now())-Date.now())/1000));
+  const cards=opts.map(k=>{const c=CATS.find(x=>x.key===k);return `<button class="vcard${_catVoteMine===k?' mine':''}" data-cat="${k}"><div class="ve">${c.emoji}</div><div class="vl">${c.name}</div><div class="cnt">${counts[k]||0}</div></button>`;}).join("");
+  openModal(`<h2 class="disp">Vote the category</h2><p class="muted">Most votes wins · tie = random · <b>${left}</b>s</p>
+    <div class="vote-cards scrolly">${cards}</div>`);
+  $$("#modal .vcard").forEach(b=>b.onclick=()=>{ _catVoteMine=b.dataset.cat; try{netRef("catvote/"+NET.uid).set(_catVoteMine);}catch(e){} _catVoteState=Object.assign({},g,{votes:Object.assign({},votes,{[NET.uid]:_catVoteMine})}); renderCatVote(); });
+}
 
 /* =================== INIT =================== */
 function init(){
