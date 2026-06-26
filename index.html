@@ -161,7 +161,7 @@ h1,h2,h3{margin:0;font-weight:600}
 }
 .col{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);min-height:0;display:flex;flex-direction:column;overflow:hidden}
 .col h3{font-size:12px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-soft);padding:12px 14px 6px}
-.scorelist{overflow:auto;padding:0 10px 10px;display:flex;flex-direction:column;gap:6px}
+.scorelist{overflow:auto;padding:12px 10px 10px;display:flex;flex-direction:column;gap:6px}
 .srow{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:12px;background:var(--surface-2);position:relative}
 .srow.solved{background:var(--good-soft)}
 .srow.draw{box-shadow:inset 0 0 0 1.5px var(--accent)}
@@ -314,13 +314,14 @@ h1,h2,h3{margin:0;font-weight:600}
 .emo-bubble::after{content:"";position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #fff}
 .emo-bubble svg{width:90%;height:90%}
 .emo-bubble.pop{animation:emopop .16s ease-out}
-/* crown / pig icon floating above the (now bigger) head */
-.seat .head-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);z-index:6;pointer-events:none}
-.head-badge .hb{font-size:27px;line-height:1;display:inline-block;position:relative;filter:drop-shadow(0 2px 3px rgba(74,63,53,.3))}
-.head-badge .hb .xn{position:absolute;right:-13px;bottom:-3px;font-family:var(--disp);font-size:13px;color:#fff;background:var(--accent);border-radius:9px;padding:0 4px;box-shadow:var(--shadow)}
-.ava-wrap{position:relative;flex:0 0 auto;line-height:0}
-.ava-badge{position:absolute;top:-9px;left:-7px;font-size:15px;z-index:3;filter:drop-shadow(0 1px 1px rgba(74,63,53,.3))}
-.ava-badge b{font-family:var(--disp);font-size:9px;color:#fff;background:var(--accent);border-radius:6px;padding:0 2px;margin-left:-2px}
+/* crown / rotten-pig icon floating above the (now bigger) head */
+.seat .head-badge{position:absolute;top:-14px;left:50%;transform:translateX(-50%);z-index:9;pointer-events:none}
+.head-badge .hb{line-height:1;display:inline-block;position:relative;filter:drop-shadow(0 2px 3px rgba(74,63,53,.35))}
+.head-badge .hb .badge-svg{width:34px;height:34px;display:block}
+.ava-wrap{position:relative;flex:0 0 auto;line-height:0;overflow:visible}
+.ava-badge{position:absolute;top:-10px;left:-8px;z-index:5;filter:drop-shadow(0 1px 1px rgba(74,63,53,.3));line-height:0}
+.ava-badge .badge-svg{width:22px;height:22px;display:block}
+.head-badge .hb .xn,.ava-badge b{position:absolute;right:-9px;bottom:-3px;font-family:var(--disp);font-size:11px;color:#fff;background:var(--accent);border-radius:7px;padding:0 3px;box-shadow:var(--shadow);line-height:1.3}
 /* chat bubble above the head (lobby chat) — wide horizontal, grows with text, multi-line */
 .chat-bubble{position:absolute;left:50%;bottom:calc(100% + 5px);transform:translateX(-50%);min-width:96px;max-width:240px;width:max-content;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:7px 13px;font-size:12.5px;font-weight:600;color:var(--ink);box-shadow:0 4px 12px rgba(74,63,53,.24);z-index:9;pointer-events:none;text-align:center;line-height:1.38;white-space:normal;word-break:break-word}
 .chat-bubble::after{content:"";position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);border-left:6px solid transparent;border-right:6px solid transparent;border-top:7px solid #fff}
@@ -1149,18 +1150,30 @@ function pigCount(p){return S.pigHats[p.id]||0;}
 /* award: 1st place gains a crown & loses any pig; last place gains a pig & loses any crown */
 function awardCrown(id){S.champWins[id]=(S.champWins[id]||0)+1;S.pigHats[id]=0;}
 function awardPig(id){S.pigHats[id]=(S.pigHats[id]||0)+1;S.champWins[id]=0;}
+/* badge art */
+function crownSVG(){return `<svg viewBox="0 0 40 28" class="badge-svg" xmlns="http://www.w3.org/2000/svg"><path d="M5 23 L3 7 L13 16 L20 3 L27 16 L37 7 L35 23 Z" fill="#FFD15C" stroke="#D69A28" stroke-width="1.5" stroke-linejoin="round"/><rect x="5" y="22" width="30" height="4.5" rx="1.6" fill="#F2B73E" stroke="#D69A28" stroke-width="1.3"/><circle cx="13" cy="16" r="1.8" fill="#E8617A"/><circle cx="20" cy="6" r="1.9" fill="#6FB6E0"/><circle cx="27" cy="16" r="1.8" fill="#7ED3A0"/><path d="M20 0 l.9 1.9 l1.9 .9 l-1.9 .9 l-.9 1.9 l-.9 -1.9 l-1.9 -.9 l1.9 -.9 Z" fill="#FFF6D0"/></svg>`;}
+function pigSVG(){return `<svg viewBox="0 0 40 40" class="badge-svg" xmlns="http://www.w3.org/2000/svg">`
+  +`<g opacity=".95"><line x1="31" y1="7" x2="33.5" y2="4.5" stroke="#5E6B47" stroke-width="1"/><ellipse cx="35" cy="5" rx="2.2" ry="1.4" fill="#332E26"/><ellipse cx="33.8" cy="3.6" rx="1" ry="1.7" fill="#cfd8c0" opacity=".7"/><ellipse cx="36.2" cy="3.6" rx="1" ry="1.7" fill="#cfd8c0" opacity=".7"/></g>`   // fly
+  +`<path d="M7 10 Q5 8 7 6 Q9 4 7 2" fill="none" stroke="#9DB87A" stroke-width="1.1" stroke-linecap="round" opacity=".8"/>`   // stink
+  +`<path d="M9 15 L6 7 L16 12 Z" fill="#8A9A6E" stroke="#5A6743" stroke-width="1.2" stroke-linejoin="round"/><path d="M31 15 L34 7 L24 12 Z" fill="#8A9A6E" stroke="#5A6743" stroke-width="1.2" stroke-linejoin="round"/>`   // ears
+  +`<ellipse cx="20" cy="23" rx="13" ry="11.5" fill="#9DAC80" stroke="#5A6743" stroke-width="1.5"/>`   // sickly head
+  +`<circle cx="11" cy="18" r="2.4" fill="#73825A"/><circle cx="29" cy="27" r="1.9" fill="#73825A"/><circle cx="25" cy="16" r="1.3" fill="#73825A"/>`   // rotten spots
+  +`<ellipse cx="20" cy="27" rx="6.6" ry="5" fill="#84936A" stroke="#5A6743" stroke-width="1.2"/><ellipse cx="17.4" cy="27" rx="1.3" ry="2.1" fill="#4A5535"/><ellipse cx="22.6" cy="27" rx="1.3" ry="2.1" fill="#4A5535"/>`   // snout
+  +`<path d="M11.5 19 l3.4 3.4 M14.9 19 l-3.4 3.4" stroke="#33301F" stroke-width="1.7" stroke-linecap="round"/><path d="M25 19 l3.4 3.4 M28.4 19 l-3.4 3.4" stroke="#33301F" stroke-width="1.7" stroke-linecap="round"/>`   // X dead eyes
+  +`<path d="M16.5 32 Q20 38.5 23.5 32 Q22 34 20 34 Q18 34 16.5 32 Z" fill="#B56A78" stroke="#8A4A58" stroke-width="1"/>`   // lolling tongue
+  +`</svg>`;}
 /* floating icon above the character's head (lobby) */
 function headBadgeHTML(p){
   const c=crownCount(p),g=pigCount(p);
-  if(c>0)return `<div class="head-badge"><span class="hb">👑${c>1?`<span class="xn">x${c}</span>`:''}</span></div>`;
-  if(g>0)return `<div class="head-badge"><span class="hb">🐷${g>1?`<span class="xn">x${g}</span>`:''}</span></div>`;
+  if(c>0)return `<div class="head-badge"><span class="hb">${crownSVG()}${c>1?`<span class="xn">x${c}</span>`:''}</span></div>`;
+  if(g>0)return `<div class="head-badge"><span class="hb">${pigSVG()}${g>1?`<span class="xn">x${g}</span>`:''}</span></div>`;
   return "";
 }
 /* small badge over the scoreboard avatar */
 function avaBadgeHTML(p){
   const c=crownCount(p),g=pigCount(p);
-  if(c>0)return `<span class="ava-badge">👑${c>1?`<b>x${c}</b>`:''}</span>`;
-  if(g>0)return `<span class="ava-badge">🐷${g>1?`<b>x${g}</b>`:''}</span>`;
+  if(c>0)return `<span class="ava-badge">${crownSVG()}${c>1?`<b>x${c}</b>`:''}</span>`;
+  if(g>0)return `<span class="ava-badge">${pigSVG()}${g>1?`<b>x${g}</b>`:''}</span>`;
   return "";
 }
 function buildCats(){
