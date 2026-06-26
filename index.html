@@ -355,10 +355,9 @@ h1,h2,h3{margin:0;font-weight:600}
         <div id="charGrid" class="char-grid"></div>
         <div class="home-sound">
           <button id="muteBtnHome" class="soundtoggle" title="Sound effects on / off">🔊 Sound: On</button>
-          <button id="bgmBtnHome" class="soundtoggle bgm-toggle off" title="Choose a song from your device">🎵 Choose music</button>
-          <button id="bgmChangeHome" class="soundtoggle" title="Pick a different song" style="display:none">🔁 Change</button>
+          <button id="bgmBtnHome" class="soundtoggle bgm-toggle off" title="Background music on / off">🎵 Music: Off</button>
+          <button id="bgmChangeHome" class="soundtoggle" title="Use a different YouTube link">🔁 Change song</button>
         </div>
-        <input type="file" id="bgmFile" accept="audio/*" hidden>
       </div>
       <div class="card browser-card">
         <div class="browser-head">
@@ -404,6 +403,7 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="lobbychat-log" id="lobbyChatLog"></div>
       <div class="lobbychat"><input id="lobbyChatInput" class="field" placeholder="Say something to the room..." maxlength="60"><button id="lobbyChatSend" class="btn primary sm">Send</button></div>
       <button id="bgmBtnLobby" class="btn ghost bgm-toggle off" style="width:100%;margin-top:8px" title="Background music on / off">🎵 Music: Off</button>
+      <button id="editProfileBtn" class="btn ghost" style="width:100%;margin-top:8px" title="Change your name or character">✏️ Name &amp; character</button>
       <button id="leaveLobby" class="btn ghost" style="width:100%;margin-top:8px">Leave room</button>
     </div>
   </div>
@@ -437,7 +437,7 @@ h1,h2,h3{margin:0;font-weight:600}
       <button id="bgmBtn" class="mutebtn bgm-toggle off" title="Background music on / off">🎵</button>
       <button id="exitBtn" class="mutebtn exitbtn" title="Exit to lobby">Exit</button>
     </div>
-    <audio id="bgmAudio" loop preload="auto"></audio>
+    <div id="ytbgm-wrap" aria-hidden="true" style="position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;pointer-events:none"><div id="ytbgm"></div></div>
 
     <div class="gmain">
       <div class="sidecol">
@@ -735,39 +735,54 @@ function sndYourTurn(){[523,659,784,1047].forEach((f,i)=>_tone(f,.2,"triangle",.
 function sndTick(){_tone(880,.05,"sine",.1);}
 function sndUrgent(level){const base=level>=2?740:480;_tone(base,.08,"square",.16);if(level>=2)_tone(base*1.5,.09,"square",.13,.12);}
 
-/* ===== BACKGROUND MUSIC — pick a file from YOUR device (no upload needed).
-   The chosen song is cached in the browser (IndexedDB) so it's remembered next time. ===== */
-let bgmOn=false, bgmURL=null, bgmLoaded=false;
-function bgmEl(){return document.getElementById("bgmAudio");}
-/* tiny IndexedDB store for the music blob */
-function _bgmDB(){return new Promise((res,rej)=>{try{const r=indexedDB.open("gtw-bgm",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});}
-async function _bgmSave(blob){try{const db=await _bgmDB();await new Promise((res,rej)=>{const tx=db.transaction("f","readwrite");tx.objectStore("f").put(blob,"song");tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});}catch(e){}}
-async function _bgmGet(){try{const db=await _bgmDB();return await new Promise(res=>{const tx=db.transaction("f","readonly");const rq=tx.objectStore("f").get("song");rq.onsuccess=()=>res(rq.result||null);rq.onerror=()=>res(null);});}catch(e){return null;}}
-async function _bgmDel(){try{const db=await _bgmDB();const tx=db.transaction("f","readwrite");tx.objectStore("f").delete("song");}catch(e){}}
-function _setSong(blob){ if(bgmURL)try{URL.revokeObjectURL(bgmURL);}catch(e){} bgmURL=URL.createObjectURL(blob); const a=bgmEl(); if(a){a.src=bgmURL;a.volume=0.45;} bgmLoaded=true; }
-function pickBgm(){ const inp=document.getElementById("bgmFile"); if(inp)inp.click(); }     // open the file chooser
-function clearBgm(){ const a=bgmEl();if(a){a.pause();a.removeAttribute("src");a.load();} bgmOn=false;bgmLoaded=false; if(bgmURL){try{URL.revokeObjectURL(bgmURL);}catch(e){}bgmURL=null;} _bgmDel(); syncBgmBtns(); toast("Music removed"); }
-function startBgm(){ const a=bgmEl();if(!a||!bgmLoaded)return; const p=a.play(); if(p&&p.catch)p.catch(()=>{}); }
+/* ===== BACKGROUND MUSIC — plays a YouTube track via the official IFrame Player.
+   Loops forever, toggles on/off on every screen, and the link can be changed. ===== */
+let bgmOn=false, ytReady=false, ytPlayer=null;
+let BGM_YT_ID=(function(){try{return localStorage.getItem("gtw_yt")||"Hzd4EBli2As";}catch(e){return "Hzd4EBli2As";}})();
+function ytExtractId(u){ if(!u)return null; const s=String(u).trim();
+  const m=s.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/); if(m)return m[1];
+  if(/^[A-Za-z0-9_-]{11}$/.test(s))return s; return null; }
+function _loadYTApi(){
+  if(window.YT&&window.YT.Player){ _createYT(); return; }
+  if(document.getElementById("ytapi"))return;
+  const t=document.createElement("script");t.id="ytapi";t.src="https://www.youtube.com/iframe_api";document.head.appendChild(t);
+}
+window.onYouTubeIframeAPIReady=function(){ _createYT(); };
+function _createYT(){
+  if(ytPlayer||!window.YT||!window.YT.Player||!document.getElementById("ytbgm"))return;
+  ytPlayer=new YT.Player("ytbgm",{
+    height:"1",width:"1",videoId:BGM_YT_ID,
+    playerVars:{autoplay:0,controls:0,disablekb:1,loop:1,playlist:BGM_YT_ID,modestbranding:1,playsinline:1,fs:0,rel:0},
+    events:{
+      onReady:()=>{ ytReady=true; try{ytPlayer.setVolume(45);}catch(e){} if(bgmOn)try{ytPlayer.playVideo();}catch(e){} syncBgmBtns(); },
+      onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED){ try{ytPlayer.seekTo(0);ytPlayer.playVideo();}catch(e2){} } }   // loop safety net
+    }
+  });
+}
+function startBgm(){ if(ytReady&&ytPlayer)try{ytPlayer.playVideo();}catch(e){} }
 function toggleBgm(){
-  if(!bgmLoaded){ pickBgm(); return; }        // no song yet -> choose one
-  bgmOn=!bgmOn; const a=bgmEl();
-  if(bgmOn)startBgm(); else if(a)a.pause();
+  bgmOn=!bgmOn;
+  if(ytReady&&ytPlayer){ try{ bgmOn?ytPlayer.playVideo():ytPlayer.pauseVideo(); }catch(e){} }
+  else if(bgmOn){ _loadYTApi(); }     // first press -> spin up the player; it starts when ready
   syncBgmBtns();
 }
 function cycleBgmTrack(){}
+function changeBgmLink(){
+  const u=prompt("Paste a YouTube link to use as background music:","https://youtu.be/"+BGM_YT_ID);
+  if(u===null)return;
+  const id=ytExtractId(u); if(!id){ toast("That doesn't look like a YouTube link"); return; }
+  BGM_YT_ID=id; try{localStorage.setItem("gtw_yt",id);}catch(e){}
+  bgmOn=true;
+  if(ytReady&&ytPlayer){ try{ ytPlayer.loadVideoById(id); ytPlayer.setVolume(45); }catch(e){} }
+  else { _loadYTApi(); }
+  syncBgmBtns(); toast("🎵 Music updated");
+}
 function syncBgmBtns(){
-  const label = !bgmLoaded ? "🎵 Choose music" : (bgmOn ? "🎵 Music: On" : "🎵 Music: Off");
-  $$(".bgm-toggle").forEach(b=>{ b.classList.toggle("off",!bgmOn);
-    if(b.id==="bgmBtnHome"||b.id==="bgmBtnLobby")b.textContent=label;
-  });
-  const ch=document.getElementById("bgmChangeHome"); if(ch)ch.style.display=bgmLoaded?"inline-flex":"none";
+  const label = bgmOn ? "🎵 Music: On" : "🎵 Music: Off";
+  $$(".bgm-toggle").forEach(b=>{ b.classList.toggle("off",!bgmOn); if(b.id==="bgmBtnHome"||b.id==="bgmBtnLobby")b.textContent=label; });
 }
-async function initBgm(){
-  const blob=await _bgmGet();
-  if(blob){ _setSong(blob); }     // remembered from a previous visit (won't autoplay until you press play)
-  syncBgmBtns();
-}
-document.addEventListener("pointerdown",()=>{ const a=_audio();if(a&&a.state==="suspended")a.resume(); if(bgmOn){const m=bgmEl();if(m&&m.paused)startBgm();} },{once:false});  // unlock + resume music on interaction
+function initBgm(){ _loadYTApi(); syncBgmBtns(); }   // preload the player so the first toggle is instant
+document.addEventListener("pointerdown",()=>{ const a=_audio();if(a&&a.state==="suspended")a.resume(); },{once:false});  // unlock SFX on interaction
 
 
 /* =================== TEXT HELPERS =================== */
@@ -1105,6 +1120,35 @@ $$('.stepper button').forEach(b=>b.onclick=()=>{
 });
 $("#readyBtn").onclick=()=>{const meE=S.players.find(p=>p.id===S.me.id);if(NET.online){netSetReady(!(meE&&meE.ready));return;}if(meE){meE.ready=!meE.ready;renderLobby();}};
 $("#leaveLobby").onclick=()=>{ if(NET.online)netLeave(); clearInterval(S.lobbyTimer); S.players=[]; const lg=$("#lobbyChatLog");if(lg)lg.innerHTML=""; show("home"); };
+/* edit name & character without leaving the room */
+function openEditProfile(){
+  openModal(`<h2 class="disp">Name &amp; character</h2>
+    <input id="editName" class="field" maxlength="14" placeholder="Type a nickname..." value="${esc(S.me.name||"")}">
+    <div id="editChars" class="char-grid" style="margin-top:12px;max-height:230px;overflow:auto"></div>
+    <div class="row" style="margin-top:14px"><button class="btn" id="editCancel">Cancel</button><button class="btn primary" id="editSave">Save</button></div>`);
+  let pickId=S.me.charId||0;
+  const grid=$("#editChars");
+  CHARACTERS.forEach((c,i)=>{
+    const b=document.createElement("button");b.className="char"+(i===pickId?" sel":"");b.setAttribute("aria-label",c.key);
+    b.innerHTML=`<div class="cw" style="background:${c.ring}">${animalHead(c)}</div>`;
+    b.onclick=()=>{pickId=i;$$("#editChars .char").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");};
+    grid.appendChild(b);
+  });
+  $("#editCancel").onclick=closeModal;
+  $("#editSave").onclick=()=>{
+    const nm=($("#editName").value||"").trim();
+    if(nm)S.me.name=nm;
+    S.me.charId=pickId;
+    if($("#nameInput"))$("#nameInput").value=S.me.name;                                  // keep the setup screen in sync
+    $$("#charGrid .char").forEach((x,i)=>x.classList.toggle("sel",i===pickId));
+    if(typeof paintHomeAva==="function")paintHomeAva();
+    const me=S.players.find(p=>p.id===S.me.id); if(me){me.name=S.me.name;me.charId=S.me.charId;}
+    if(NET.online){ netRef("players/"+NET.uid+"/name").set(S.me.name); netRef("players/"+NET.uid+"/charId").set(S.me.charId); }   // others see the change
+    renderLobby();
+    closeModal();toast("Updated ✓");
+  };
+}
+$("#editProfileBtn").onclick=openEditProfile;
 
 function amHost(){ return NET.online ? NET.isHost : !!((S.players.find(p=>p.id===S.me.id)||{}).isHost); }
 function voteKick(p){
@@ -1444,16 +1488,7 @@ function toggleMute(){_muted=!_muted;syncMuteBtns();if(!_muted)sndTurn();}
 $("#muteBtn").onclick=toggleMute;
 $("#muteBtnHome").onclick=toggleMute;
 ["#bgmBtn","#bgmBtnHome","#bgmBtnLobby"].forEach(id=>{const b=$(id);if(b)b.onclick=toggleBgm;});
-{ const ch=$("#bgmChangeHome"); if(ch)ch.onclick=pickBgm; }
-{ const inp=$("#bgmFile");
-  if(inp)inp.addEventListener("change",e=>{
-    const f=e.target.files&&e.target.files[0]; if(!f)return;
-    _setSong(f); _bgmSave(f);            // remember for next time
-    bgmOn=true; startBgm(); syncBgmBtns();
-    toast("🎵 "+(f.name.length>26?f.name.slice(0,24)+"…":f.name));
-    e.target.value="";                   // allow re-picking the same file later
-  });
-}
+{ const ch=$("#bgmChangeHome"); if(ch)ch.onclick=changeBgmLink; }
 initBgm();
 function updateCatTag(){const c=CATS.find(x=>x.key===S.cat);if(c&&$("#catTag"))$("#catTag").textContent=`${c.emoji} ${c.name}`;}
 $("#exitBtn").onclick=exitGame;
