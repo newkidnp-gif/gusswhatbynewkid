@@ -790,7 +790,7 @@ function sndUrgent(level){const base=level>=2?740:480;_tone(base,.08,"square",.1
 
 /* ===== BACKGROUND MUSIC — plays a YouTube track via the official IFrame Player.
    Loops forever, toggles on/off on every screen, and the link can be changed. ===== */
-let bgmOn=false, ytReady=false, ytPlayer=null;
+let bgmOn=true, ytReady=false, ytPlayer=null;
 let BGM_YT_ID=(function(){try{return localStorage.getItem("gtw_yt")||"Hzd4EBli2As";}catch(e){return "Hzd4EBli2As";}})();
 function ytExtractId(u){ if(!u)return null; const s=String(u).trim();
   const m=s.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/); if(m)return m[1];
@@ -807,7 +807,7 @@ function _createYT(){
     height:"1",width:"1",videoId:BGM_YT_ID,
     playerVars:{autoplay:0,controls:0,disablekb:1,loop:1,playlist:BGM_YT_ID,modestbranding:1,playsinline:1,fs:0,rel:0},
     events:{
-      onReady:()=>{ ytReady=true; try{ytPlayer.setVolume(45);}catch(e){} if(bgmOn)try{ytPlayer.playVideo();}catch(e){} syncBgmBtns(); },
+      onReady:()=>{ ytReady=true; try{ytPlayer.setVolume(15);}catch(e){} if(bgmOn)try{ytPlayer.playVideo();}catch(e){} syncBgmBtns(); },
       onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED){ try{ytPlayer.seekTo(0);ytPlayer.playVideo();}catch(e2){} } }   // loop safety net
     }
   });
@@ -826,7 +826,7 @@ function changeBgmLink(){
   const id=ytExtractId(u); if(!id){ toast("That doesn't look like a YouTube link"); return; }
   BGM_YT_ID=id; try{localStorage.setItem("gtw_yt",id);}catch(e){}
   bgmOn=true;
-  if(ytReady&&ytPlayer){ try{ ytPlayer.loadVideoById(id); ytPlayer.setVolume(45); }catch(e){} }
+  if(ytReady&&ytPlayer){ try{ ytPlayer.loadVideoById(id); ytPlayer.setVolume(15); }catch(e){} }
   else { _loadYTApi(); }
   syncBgmBtns(); toast("🎵 Music updated");
 }
@@ -835,7 +835,9 @@ function syncBgmBtns(){
   $$(".bgm-toggle").forEach(b=>{ b.classList.toggle("off",!bgmOn); if(b.id==="bgmBtnHome"||b.id==="bgmBtnLobby")b.textContent=label; });
 }
 function initBgm(){ _loadYTApi(); syncBgmBtns(); }   // preload the player so the first toggle is instant
-document.addEventListener("pointerdown",()=>{ const a=_audio();if(a&&a.state==="suspended")a.resume(); },{once:false});  // unlock SFX on interaction
+document.addEventListener("pointerdown",()=>{ const a=_audio();if(a&&a.state==="suspended")a.resume();
+  if(bgmOn&&ytReady&&ytPlayer){ try{ if(!ytPlayer.getPlayerState||ytPlayer.getPlayerState()!==1)ytPlayer.playVideo(); }catch(e){} }   // music defaults on; kicks in on first tap (browsers block autoplay until then)
+},{once:false});
 
 
 /* =================== TEXT HELPERS =================== */
