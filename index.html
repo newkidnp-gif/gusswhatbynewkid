@@ -197,13 +197,22 @@ h1,h2,h3{margin:0;font-weight:600}
 /* ===== Meeting Room mode (shared whiteboard, reuses #game) ===== */
 .meeting-banner{display:none;align-items:center;gap:7px;font-family:var(--disp);font-size:15px;color:var(--accent);font-weight:800;white-space:nowrap}
 #game.meeting .meeting-banner{display:inline-flex}
-#game.meeting .round-tag,#game.meeting .cat-tag,#game.meeting .target-tag,#game.meeting .word-area,#game.meeting .timer,#game.meeting .logcol,#game.meeting .guessbar{display:none!important}
+#game.meeting .round-tag,#game.meeting .cat-tag,#game.meeting .target-tag,#game.meeting .word-area,#game.meeting .timer,#game.meeting .logcol{display:none!important}
 #game.meeting .scorecol h3::after{content:""}
 .mpeople{display:flex;flex-direction:column;gap:7px;padding:10px}
 .mperson{display:flex;align-items:center;gap:9px}
 .mperson .pava{width:30px;height:30px}
 .mperson .mn{font-weight:600;font-size:13px;color:var(--ink)}
 .mperson .mhost{font-size:10px;background:var(--accent);color:#fff;border-radius:6px;padding:1px 5px;font-family:var(--disp)}
+.create-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+/* meeting chat: bubbles, contained so it never spills onto the canvas */
+#game.meeting .guessbar{display:flex!important}
+#game.meeting .guessfeed{height:auto;flex:1 1 auto;min-height:84px;max-height:34vh;background:var(--surface-2)}
+#game.meeting .msg{background:#fff;border:1px solid var(--line);border-radius:13px;padding:5px 11px;align-self:flex-start;max-width:84%;box-shadow:0 1px 2px rgba(74,63,53,.08);word-break:break-word}
+#game.meeting .msg.me{align-self:flex-end;background:var(--accent-soft);border-color:var(--accent)}
+#game.meeting .msg .who{display:block;font-size:11px;opacity:.8;margin-bottom:1px}
+#game.meeting .msg.me .who{display:none}
+.typing-ind{height:16px;padding:0 12px;font-size:12px;color:var(--ink-soft);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcell.sel{border:2.5px solid var(--ink);box-shadow:0 0 0 1.5px #fff inset}
 .pcell.sel{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset}
 
@@ -384,9 +393,11 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="card browser-card">
         <div class="browser-head">
           <h3 class="disp">Rooms</h3>
-          <button id="btnCreate" class="btn primary sm">+ Game room</button>
         </div>
-        <button id="btnCreateMeeting" class="btn sm" style="width:100%;margin-bottom:8px">📋 Create Meeting Room — draw together to plan</button>
+        <div class="create-row">
+          <button id="btnCreate" class="btn primary sm">🎮 Game room</button>
+          <button id="btnCreateMeeting" class="btn primary sm">📋 Meeting room</button>
+        </div>
         <div class="joincode-row">
           <input id="joinCodeInput" class="field" maxlength="4" placeholder="Enter a room code" style="text-transform:uppercase">
           <button id="btnJoin" class="btn sm">Join</button>
@@ -491,6 +502,7 @@ h1,h2,h3{margin:0;font-weight:600}
         <div class="palette" id="palette"></div>
         <div class="guessbar">
           <div class="guessfeed" id="guessfeed"></div>
+          <div class="typing-ind" id="typingInd"></div>
           <div class="chatbox">
             <input id="guessInput" class="field" placeholder="Type your guess..." maxlength="40">
             <button id="sendGuess" class="btn primary sm">Send</button>
@@ -1023,12 +1035,44 @@ function enterMeeting(){
   $("#centerMsg").classList.remove("on");
   clearBoard();
   renderMeetingPeople();
+  // enable the chat box (reuse the guess input as a message box)
+  const inp=$("#guessInput");if(inp){inp.disabled=false;inp.placeholder="Type a message…";}
+  $("#typingInd").textContent="";_amTyping=false;
   // draw existing strokes once (history), then stream new ones — dedup by key so nothing draws twice
   S._mprimed=false;S._mSeen={};
   const sref=netRef("strokes");
   sref.off();
   sref.on("child_added",s=>{ if(S._mSeen[s.key])return; S._mSeen[s.key]=1; meetDraw(s.val(),S._mprimed); });
   sref.once("value",snap=>{ const all=snap.val()||{}; Object.keys(all).forEach(k=>{ if(!S._mSeen[k]){S._mSeen[k]=1;meetDraw(all[k],false);} }); S._mprimed=true; });
+  // chat: replay history once, then live (dedup by key; skip echo of my own live messages)
+  S._cprimed=false;S._cSeen={};
+  const cref=netRef("chat");
+  cref.off();
+  cref.on("child_added",s=>{ if(S._cSeen[s.key])return; S._cSeen[s.key]=1; const c=s.val(); if(!c||!c.text)return; if(S._cprimed&&c.uid===NET.uid)return; meetChat(c); });
+  cref.once("value",snap=>{ const all=snap.val()||{}; Object.keys(all).forEach(k=>{ if(!S._cSeen[k]){S._cSeen[k]=1; if(all[k]&&all[k].text)meetChat(all[k]);} }); S._cprimed=true; });
+}
+function meetChat(c){ const fake={name:c.name,charId:c.char||0}; chat(c.name,c.text,fake,c.uid===NET.uid?"me":""); }
+function netMeetSend(text){
+  chat(S.me.name,text,S.me,"me");                                   // show my own message instantly
+  if(NET.online)netRef("chat").push({uid:NET.uid,name:S.me.name||"Player",char:S.me.charId,text:text});
+}
+let _typingTimer=null,_amTyping=false;
+function netSetTyping(on){
+  if(!(S.meeting&&NET.online))return;
+  if(on===_amTyping)return;                      // avoid redundant writes on every keystroke
+  _amTyping=on;
+  try{ netRef("players/"+NET.uid+"/typing").set(on?(S.me.name||"Someone"):null); }catch(e){}
+}
+function onMeetTyping(){
+  if(!S.meeting)return;
+  netSetTyping(true);
+  clearTimeout(_typingTimer);_typingTimer=setTimeout(()=>netSetTyping(false),2200);
+}
+function renderMeetingTyping(){
+  const el=$("#typingInd");if(!el)return;
+  const map=NET.playersMap||{};
+  const names=Object.keys(map).filter(uid=>uid!==NET.uid&&map[uid]&&map[uid].typing).map(uid=>map[uid].typing);
+  el.textContent = names.length? (names.length===1?`${names[0]} is typing…`:`${names.slice(0,2).join(", ")}${names.length>2?" and others":""} are typing…`) : "";
 }
 function meetDraw(s,isLive){
   if(!s||!board)return;
@@ -1585,6 +1629,7 @@ function registerCorrect(p){
 }
 function submitGuess(){
   const inp=$("#guessInput");const v=inp.value.trim();if(!v)return;inp.value="";
+  if(S.meeting){ netMeetSend(v); netSetTyping(false); clearTimeout(_typingTimer); return; }   // meeting = plain chat
   if(NET.online){ if(S.drawerId===S.me.id)return; netPushGuess(v); return; }
   if(!S.roundActive||S.drawerId===S.me.id)return;
   if(S.guessedThisRound.has(S.me.id)){chat(S.me.name,v,S.me);return;}
@@ -1600,6 +1645,7 @@ function submitGuess(){
 }
 $("#sendGuess").onclick=submitGuess;
 $("#guessInput").addEventListener("keydown",e=>{if(e.key==="Enter")submitGuess();});
+$("#guessInput").addEventListener("input",()=>{ if(S.meeting)onMeetTyping(); });
 function syncMuteBtns(){const g=$("#muteBtn");if(g)g.textContent=_muted?"🔇":"🔊";const h=$("#muteBtnHome");if(h){h.textContent=(_muted?"🔇 Sound: Off":"🔊 Sound: On");h.classList.toggle("off",_muted);}}
 function toggleMute(){_muted=!_muted;syncMuteBtns();if(!_muted)sndTurn();}
 $("#muteBtn").onclick=toggleMute;
@@ -1819,8 +1865,12 @@ function netLeave(){
   S.champWins={};S.pigHats={};S.meeting=false;   // crown/pig stats + meeting flag reset on leaving the room
 }
 function leaveMeetingUI(){   // restore the #game chrome after a Meeting Room
+  try{ if(NET.online&&NET.uid)netRef("players/"+NET.uid+"/typing").set(null); }catch(e){}
+  clearTimeout(_typingTimer);
   S.meeting=false;
   const g=$("#game");if(g)g.classList.remove("meeting");
+  const ti=$("#typingInd");if(ti)ti.textContent="";
+  const gi=$("#guessInput");if(gi){gi.placeholder="Type your guess...";}
   const sl=$("#scoreList");if(sl){sl.className="scorelist";const h=sl.previousElementSibling;if(h)h.textContent="Score";}
 }
 /* tab close / refresh: remove self & hand off host right away (onDisconnect is the server-side safety net) */
@@ -1845,8 +1895,10 @@ function netWatch(){
   netRef("game").on("value",s=>{ if(!NET.isHost)netApplyGame(s.val()); });
   if(!S.meeting)netRef("strokes").on("child_added",s=>netApplyStroke(s.val()));
   let chatPrimed=false;
-  netRef("chat").on("value",()=>{chatPrimed=true;});                     // fires once after initial history load
-  netRef("chat").on("child_added",s=>{ if(chatPrimed)netApplyChat(s.val()); });   // only live messages — never replay old answers
+  if(!S.meeting){
+    netRef("chat").on("value",()=>{chatPrimed=true;});                     // fires once after initial history load
+    netRef("chat").on("child_added",s=>{ if(chatPrimed)netApplyChat(s.val()); });   // only live messages — never replay old answers
+  }
   netRef("emotes").on("child_added",s=>{const e=s.val();if(e&&e.id&&e.t&&e.id!==NET.uid)emote(e.id,e.t);});
   let lcPrimed=false;
   netRef("lobbyChat").on("value",()=>{lcPrimed=true;});   // fires once after initial history replay
@@ -1862,13 +1914,13 @@ function netApplyPlayers(map){
   const arr=Object.keys(map).map(uid=>({id:uid,name:map[uid].name||"Player",charId:map[uid].charId||0,accId:map[uid].accId||0,ready:!!map[uid].ready,isHost:!!map[uid].isHost,isBot:!!map[uid].isBot,skill:map[uid].skill||0.5,score:map[uid].score||0,joined:map[uid].joined||0}));
   arr.sort((a,b)=>a.joined-b.joined);
   S.players=arr;
-  Object.keys(map).forEach(uid=>{ S.champWins[uid]=map[uid].crown||0; S.pigHats[uid]=map[uid].pig||0; });   // synced crown/pig stats
+  Object.keys(map).forEach(uid=>{ if(map[uid].crown!=null)S.champWins[uid]=map[uid].crown; if(map[uid].pig!=null)S.pigHats[uid]=map[uid].pig; });   // only overwrite when the field actually exists (avoids wiping a fresh award before it syncs)
   netMaybeElect();
   netUpdateRoomList();   // keep room browser count fresh
   // host: if current drawer left mid-round, skip to next turn
   if(NET.isHost&&S.roundActive&&S.drawerId&&!map[S.drawerId])netEndRoundHost("Drawer left");
   if($("#lobby").classList.contains("on"))renderLobby();
-  else if($("#game").classList.contains("on"))renderScores();
+  else if($("#game").classList.contains("on")){renderScores();if(S.meeting)renderMeetingTyping();}
 }
 function netApplyMeta(meta){
   if(!meta)return;
@@ -2115,7 +2167,7 @@ function netEndGameHost(){
   }
   S.players.forEach(p=>{ netRef("players/"+p.id+"/crown").set(S.champWins[p.id]||0); netRef("players/"+p.id+"/pig").set(S.pigHats[p.id]||0); });  // sync stats to everyone
   const scores={};S.players.forEach(p=>scores[p.id]=p.score);
-  netRef("game").set({phase:"ended",winners,losers,scores,totalRounds:S.totalRounds,cat:S.cat});
+  netRef("game").set({phase:"ended",winners,losers,scores,champ:Object.assign({},S.champWins),pigs:Object.assign({},S.pigHats),totalRounds:S.totalRounds,cat:S.cat});
   netRef("meta/phase").set("lobby");netUpdateRoomList();
   netShowEnd({winners,losers,scores});
 }
@@ -2220,6 +2272,8 @@ function netApplyGame(g){
 }
 function netShowEnd(g){
   clearInterval(S.tickId);clearPhase();
+  if(g.champ)S.champWins=Object.assign({},g.champ);   // authoritative crown/pig from host -> shows instantly, no sync race
+  if(g.pigs)S.pigHats=Object.assign({},g.pigs);
   if(g.scores)S.players.forEach(p=>{if(g.scores[p.id]!=null)p.score=g.scores[p.id];});
   const win=new Set(g.winners||[]),lose=new Set(g.losers||[]);
   const ranked=[...S.players].sort((a,b)=>b.score-a.score);
