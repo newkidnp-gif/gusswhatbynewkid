@@ -176,6 +176,8 @@ h1,h2,h3{margin:0;font-weight:600}
 .canvas-stage{flex:1;position:relative;background:#fff;border-radius:16px;overflow:hidden;min-height:0}
 #board{width:100%;height:100%;display:block;touch-action:none;background:#fff;cursor:crosshair}
 .canvas-stage.locked #board{cursor:not-allowed}
+.brush-cursor{position:absolute;border-radius:50%;border:2px solid rgba(74,63,53,.65);background:rgba(0,0,0,.04);pointer-events:none;transform:translate(-50%,-50%);display:none;z-index:4;box-shadow:0 0 0 1px rgba(255,255,255,.7)}
+.canvas-stage.candraw:not(.locked) #board{cursor:none}
 .center-msg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:rgba(255,252,246,.82);backdrop-filter:blur(2px);text-align:center;padding:20px;z-index:5}
 .center-msg.on{display:flex}
 .center-msg .big{font-family:var(--disp);font-size:30px;color:var(--ink)}
@@ -488,6 +490,7 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="col canvaswrap">
         <div class="canvas-stage locked" id="stage">
           <canvas id="board"></canvas>
+          <div class="brush-cursor" id="brushCursor"></div>
           <div class="center-msg" id="centerMsg"></div>
         </div>
         <div class="toolbar locked" id="toolbar">
@@ -1414,9 +1417,27 @@ function setupBoard(){
   };
   const move=e=>{if(!drawing||!canDraw())return;const p=evToCanvas(e);stroke(last,p);last=p;e.preventDefault();};
   const end=()=>{drawing=false;last=null;};
+  const moveBrush=e=>{
+    const bc=$("#brushCursor");if(!bc)return;
+    const st=$("#stage");
+    if(!canDraw()){bc.style.display="none";st.classList.remove("candraw");return;}
+    st.classList.add("candraw");
+    const r=board.getBoundingClientRect();
+    const t=(e.touches&&e.touches[0])?e.touches[0]:e;
+    const x=t.clientX-r.left,y=t.clientY-r.top;
+    if(x<0||y<0||x>r.width||y>r.height){bc.style.display="none";return;}
+    const d=Math.max(6,(tool==="eraser"?penSize*2.2:penSize));   // ring diameter ≈ real brush size (min 6px so it's visible)
+    bc.style.width=d+"px";bc.style.height=d+"px";bc.style.left=x+"px";bc.style.top=y+"px";
+    bc.style.borderColor=(tool==="eraser")?"rgba(74,63,53,.6)":penColor;
+    bc.style.background=(tool==="eraser")?"rgba(74,63,53,.08)":"transparent";
+    bc.style.display="block";
+  };
+  const hideBrush=()=>{const bc=$("#brushCursor");if(bc)bc.style.display="none";};
   if(!S._boardBound){   // bind pointer handlers only once, even if setupBoard runs again for another room
     board.addEventListener("mousedown",start);board.addEventListener("mousemove",move);window.addEventListener("mouseup",end);
     board.addEventListener("touchstart",start,{passive:false});board.addEventListener("touchmove",move,{passive:false});board.addEventListener("touchend",end);
+    board.addEventListener("mousemove",moveBrush);board.addEventListener("touchmove",moveBrush,{passive:false});board.addEventListener("touchstart",moveBrush,{passive:false});
+    board.addEventListener("mouseleave",hideBrush);board.addEventListener("touchend",hideBrush);
     S._boardBound=true;
   }
 }
