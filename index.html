@@ -194,6 +194,16 @@ h1,h2,h3{margin:0;font-weight:600}
 .toolbar.locked + .palette{opacity:.4;pointer-events:none}
 .pcell{aspect-ratio:1;max-height:24px;border-radius:6px;border:1.5px solid rgba(74,63,53,.12);cursor:pointer;transition:transform .08s}
 .pcell:hover{transform:scale(1.18)}
+/* ===== Meeting Room mode (shared whiteboard, reuses #game) ===== */
+.meeting-banner{display:none;align-items:center;gap:7px;font-family:var(--disp);font-size:15px;color:var(--accent);font-weight:800;white-space:nowrap}
+#game.meeting .meeting-banner{display:inline-flex}
+#game.meeting .round-tag,#game.meeting .cat-tag,#game.meeting .target-tag,#game.meeting .word-area,#game.meeting .timer,#game.meeting .logcol,#game.meeting .guessbar{display:none!important}
+#game.meeting .scorecol h3::after{content:""}
+.mpeople{display:flex;flex-direction:column;gap:7px;padding:10px}
+.mperson{display:flex;align-items:center;gap:9px}
+.mperson .pava{width:30px;height:30px}
+.mperson .mn{font-weight:600;font-size:13px;color:var(--ink)}
+.mperson .mhost{font-size:10px;background:var(--accent);color:#fff;border-radius:6px;padding:1px 5px;font-family:var(--disp)}
 .pcell.sel{border:2.5px solid var(--ink);box-shadow:0 0 0 1.5px #fff inset}
 .pcell.sel{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset}
 
@@ -374,8 +384,9 @@ h1,h2,h3{margin:0;font-weight:600}
       <div class="card browser-card">
         <div class="browser-head">
           <h3 class="disp">Rooms</h3>
-          <button id="btnCreate" class="btn primary sm">+ Create room</button>
+          <button id="btnCreate" class="btn primary sm">+ Game room</button>
         </div>
+        <button id="btnCreateMeeting" class="btn sm" style="width:100%;margin-bottom:8px">📋 Create Meeting Room — draw together to plan</button>
         <div class="joincode-row">
           <input id="joinCodeInput" class="field" maxlength="4" placeholder="Enter a room code" style="text-transform:uppercase">
           <button id="btnJoin" class="btn sm">Join</button>
@@ -427,6 +438,7 @@ h1,h2,h3{margin:0;font-weight:600}
     <div class="topbar">
       <div class="bar-logo">Guess the <span class="what">Word</span></div>
       <div class="round-tag">Round <b id="roundNo">1</b>/<b id="roundTot">20</b></div>
+      <div class="meeting-banner">📋 Meeting Room · <span id="meetCode">—</span></div>
       <div class="cat-tag" id="catTag">🐾 สัตว์</div>
       <div class="target-tag">👑 <span id="leaderName">—</span></div>
       <div class="word-area">
@@ -903,6 +915,7 @@ function buildAccGrid(sel,onPick){
 function paintHomeAva(){const el=$("#homeAva");const c=charOf(S.me);el.style.background=c.ring;el.innerHTML=animalHead(c,S.me.accId);}
 function ensureName(){if(!S.me.name.trim()){S.me.name="Player"+Math.floor(Math.random()*900+100);$("#nameInput").value=S.me.name;}}
 $("#btnCreate").onclick=()=>{ensureName();createRoom();};
+$("#btnCreateMeeting").onclick=()=>{ensureName();createMeetingRoom();};
 $("#btnJoin").onclick=()=>{ensureName();const c=($("#joinCodeInput").value||"").trim().toUpperCase();if(c.length<4)return toast("Enter the 4-letter room code");doJoin(c,"");};
 $("#joinCodeInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("#btnJoin").click();});
 
@@ -931,11 +944,15 @@ function renderRoomCards(map){
   codes.sort((a,b)=>((map[b].updated||map[b].created||0)-(map[a].updated||map[a].created||0)));
   codes.forEach(code=>{
     const r=map[code]||{};const c=CATS.find(x=>x.key===r.cat)||{emoji:"🎯",name:r.cat||"Mixed"};
-    const playing=r.phase&&r.phase!=="lobby";
+    const meeting=(r.roomType==="meeting");
+    const playing=r.phase&&r.phase!=="lobby"&&r.phase!=="meeting";
     const card=document.createElement("div");card.className="room-card";
-    card.innerHTML=`<div class="rc-emoji">${c.emoji}</div>
-      <div class="rc-info"><div class="rc-cat">${esc(c.name)}</div>
-      <div class="rc-meta"><span class="rc-code">#${esc(code)}</span> · 👥 ${r.count||0} · <span class="rc-stat ${playing?'play':'wait'}">${playing?'Playing':'Waiting'}</span></div></div>
+    const emoji=meeting?"📋":c.emoji;
+    const title=meeting?"Meeting Room":esc(c.name);
+    const stat=meeting?`<span class="rc-stat wait">Whiteboard</span>`:`<span class="rc-stat ${playing?'play':'wait'}">${playing?'Playing':'Waiting'}</span>`;
+    card.innerHTML=`<div class="rc-emoji">${emoji}</div>
+      <div class="rc-info"><div class="rc-cat">${title}</div>
+      <div class="rc-meta"><span class="rc-code">#${esc(code)}</span> · 👥 ${r.count||0} · ${stat}</div></div>
       <button class="btn sm rc-join">${r.hasPass?'🔒':''}Join</button>`;
     card.querySelector(".rc-join").onclick=()=>{ensureName();joinFromBrowser(code,!!r.hasPass);};
     wrap.appendChild(card);
@@ -992,6 +1009,41 @@ function enterLobby(){
   $("#roomCode").textContent=S.room.code;
   $("#shareLink").value=location.origin+location.pathname+"?room="+S.room.code;
   S.myPos=null;buildCats();selectCat(S.cat);lobbyAddBots();buildEmotes();renderLobby();startLobbyLife();show("lobby");
+}
+/* ===== Meeting Room: shared whiteboard, everyone draws at once ===== */
+function enterMeeting(){
+  S.meeting=true;S.roundActive=false;S.gameOver=false;
+  $("#game").classList.add("meeting");
+  $("#meetCode").textContent=S.room.code;
+  $("#guessfeed").innerHTML="";$("#logList").innerHTML="";
+  $("#scoreList").previousElementSibling.textContent="People";   // rename the Score header to People
+  show("game");
+  setupBoard();buildToolUI();
+  $("#stage").classList.remove("locked");$("#toolbar").classList.remove("locked");   // unlock for everyone
+  $("#centerMsg").classList.remove("on");
+  clearBoard();
+  renderMeetingPeople();
+  // draw existing strokes once (history), then stream new ones — dedup by key so nothing draws twice
+  S._mprimed=false;S._mSeen={};
+  const sref=netRef("strokes");
+  sref.off();
+  sref.on("child_added",s=>{ if(S._mSeen[s.key])return; S._mSeen[s.key]=1; meetDraw(s.val(),S._mprimed); });
+  sref.once("value",snap=>{ const all=snap.val()||{}; Object.keys(all).forEach(k=>{ if(!S._mSeen[k]){S._mSeen[k]=1;meetDraw(all[k],false);} }); S._mprimed=true; });
+}
+function meetDraw(s,isLive){
+  if(!s||!board)return;
+  if(isLive&&s.by===NET.uid)return;                 // skip echo of my own live strokes (already drawn locally)
+  if(s.clear){clearBoard();return;}
+  if(s.fill){floodFill(Math.round(s.fx*board.width),Math.round(s.fy*board.height),s.c);return;}
+  if(!s.a||!s.b)return;
+  ctx.strokeStyle=s.e?"#ffffff":s.c;ctx.lineWidth=(s.e?s.w*2.2:s.w)*S.bscale;ctx.lineCap="round";ctx.lineJoin="round";
+  ctx.beginPath();ctx.moveTo(s.a[0]*board.width,s.a[1]*board.height);ctx.lineTo(s.b[0]*board.width,s.b[1]*board.height);ctx.stroke();
+}
+function renderMeetingPeople(){
+  const list=$("#scoreList");if(!list)return;
+  const ppl=(S.players||[]).slice().sort((a,b)=>(a.joined||0)-(b.joined||0));
+  list.className="mpeople";
+  list.innerHTML=ppl.map(p=>`<div class="mperson">${avaHTML(p)}<span class="mn">${esc(p.name||"Player")}</span>${p.isHost?'<span class="mhost">Host</span>':''}</div>`).join("")||`<div class="muted" style="padding:10px">Just you so far</div>`;
 }
 const REKEYS=["happy","laugh","love","blush","wink","sad","angry","cry","shock","dizzy","cool","question"];
 function faceSVG(t){
@@ -1314,13 +1366,16 @@ function setupBoard(){
   const start=e=>{
     if(!canDraw())return;
     const p=evToCanvas(e);
-    if(tool==="fill"){pushUndo();floodFill(Math.round(p.x),Math.round(p.y),penColor);if(NET.online&&S.drawerId===S.me.id&&board)netPushStroke({fill:1,fx:p.x/board.width,fy:p.y/board.height,c:penColor});return;}
+    if(tool==="fill"){pushUndo();floodFill(Math.round(p.x),Math.round(p.y),penColor);if(NET.online&&(S.meeting||S.drawerId===S.me.id)&&board)netPushStroke({fill:1,fx:p.x/board.width,fy:p.y/board.height,c:penColor});return;}
     drawing=true;last=p;pushUndo();stroke(p,p);e.preventDefault();
   };
   const move=e=>{if(!drawing||!canDraw())return;const p=evToCanvas(e);stroke(last,p);last=p;e.preventDefault();};
   const end=()=>{drawing=false;last=null;};
-  board.addEventListener("mousedown",start);board.addEventListener("mousemove",move);window.addEventListener("mouseup",end);
-  board.addEventListener("touchstart",start,{passive:false});board.addEventListener("touchmove",move,{passive:false});board.addEventListener("touchend",end);
+  if(!S._boardBound){   // bind pointer handlers only once, even if setupBoard runs again for another room
+    board.addEventListener("mousedown",start);board.addEventListener("mousemove",move);window.addEventListener("mouseup",end);
+    board.addEventListener("touchstart",start,{passive:false});board.addEventListener("touchmove",move,{passive:false});board.addEventListener("touchend",end);
+    S._boardBound=true;
+  }
 }
 function resizeBoard(){
   if(!board)return;
@@ -1334,12 +1389,12 @@ function resizeBoard(){
   if(snap)try{ctx.putImageData(snap,0,0);}catch(e){}
   ctx.lineCap="round";ctx.lineJoin="round";
 }
-function canDraw(){return S.roundActive&&S.drawerId===S.me.id;}
+function canDraw(){return S.meeting?true:(S.roundActive&&S.drawerId===S.me.id);}
 function stroke(a,b){
   ctx.strokeStyle=tool==="eraser"?"#ffffff":penColor;
   ctx.lineWidth=(tool==="eraser"?penSize*2.2:penSize)*S.bscale;
   ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-  if(NET.online&&S.drawerId===S.me.id&&board)netPushStroke({a:[a.x/board.width,a.y/board.height],b:[b.x/board.width,b.y/board.height],c:penColor,w:penSize,e:tool==="eraser"?1:0});
+  if(NET.online&&(S.meeting||S.drawerId===S.me.id)&&board)netPushStroke({a:[a.x/board.width,a.y/board.height],b:[b.x/board.width,b.y/board.height],c:penColor,w:penSize,e:tool==="eraser"?1:0});
 }
 function pushUndo(){try{undoStack.push(ctx.getImageData(0,0,board.width,board.height));if(undoStack.length>15)undoStack.shift();}catch(e){}}
 function undo(){if(undoStack.length)ctx.putImageData(undoStack.pop(),0,0);}
@@ -1376,7 +1431,7 @@ function buildToolUI(){
     b.onclick=()=>{penColor=c;if(tool==="eraser"){tool="pen";selTool("pen");}$$("#palette .pcell").forEach(x=>x.classList.remove("sel"));b.classList.add("sel");};
     pal.appendChild(b);
   });
-  $$(".tool").forEach(b=>b.onclick=()=>{const t=b.dataset.tool;if(t==="undo"){undo();return;}if(t==="clear"){pushUndo();clearBoard(true);if(NET.online&&S.drawerId===S.me.id)netPushStroke({clear:1});return;}tool=t;selTool(t);});
+  $$(".tool").forEach(b=>b.onclick=()=>{const t=b.dataset.tool;if(t==="undo"){undo();return;}if(t==="clear"){pushUndo();clearBoard(true);if(NET.online&&(S.meeting||S.drawerId===S.me.id))netPushStroke({clear:1});return;}tool=t;selTool(t);});
 }
 function selTool(t){$$(".tool").forEach(x=>x.classList.toggle("sel",x.dataset.tool===t));}
 function setToolsLocked(locked){
@@ -1559,7 +1614,7 @@ function exitGame(){
     openModal(`<h2 class="disp">Leave room?</h2><p class="muted">You'll leave this online room.</p>
       <div class="row"><button class="btn" id="exNo">Stay</button><button class="btn hot" id="exYes">Leave</button></div>`);
     $("#exNo").onclick=closeModal;
-    $("#exYes").onclick=()=>{closeModal();clearInterval(S.tickId);clearPhase();netLeave();S.players=[];show("home");};
+    $("#exYes").onclick=()=>{closeModal();clearInterval(S.tickId);clearPhase();netLeave();S.players=[];leaveMeetingUI();show("home");};
     return;
   }
   openModal(`<h2 class="disp">Exit game?</h2><p class="muted">Return to the main menu — scores reset.</p>
@@ -1630,6 +1685,7 @@ function returnToLobby(){
 
 /* =================== SCOREBOARD =================== */
 function renderScores(){
+  if(S.meeting){renderMeetingPeople();return;}
   const list=$("#scoreList");list.innerHTML="";
   const sorted=[...S.players].sort((a,b)=>b.score-a.score);
   sorted.forEach(p=>{
@@ -1703,14 +1759,21 @@ function netEnsureAuth(){
 function netRef(p){ return NET.db.ref("rooms/"+NET.code+(p?"/"+p:"")); }
 
 /* ---------- create / join ---------- */
-async function netCreateRoom(){
+async function netCreateRoom(roomType){
   const uid=await netEnsureAuth(); if(!uid)return false;
+  const meeting=(roomType==="meeting");
+  S.meeting=meeting;                       // set BEFORE netWatch so stroke handling routes correctly
   NET.online=true;NET.code=code4();NET.isHost=true;NET.base=netRef();NET.hostUid=uid;
   S.room.code=NET.code;S.me.id=uid;
-  await netRef("meta").set({host:uid,pass:S.room.pass||"",cat:S.cat,roundTime:S.roundTime,maxRounds:S.maxRounds,phase:"lobby",created:firebase.database.ServerValue.TIMESTAMP});
-  try{ firebase.database().ref("roomList/"+NET.code).set({code:NET.code,cat:S.cat,count:1,phase:"lobby",hasPass:!!(S.room.pass),host:uid,created:firebase.database.ServerValue.TIMESTAMP,updated:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
-  netJoinSelf(true);netWatch();enterLobby();
+  await netRef("meta").set({host:uid,pass:S.room.pass||"",cat:S.cat,roundTime:S.roundTime,maxRounds:S.maxRounds,phase:meeting?"meeting":"lobby",roomType:meeting?"meeting":"game",created:firebase.database.ServerValue.TIMESTAMP});
+  try{ firebase.database().ref("roomList/"+NET.code).set({code:NET.code,cat:S.cat,count:1,phase:meeting?"meeting":"lobby",roomType:meeting?"meeting":"game",hasPass:!!(S.room.pass),host:uid,created:firebase.database.ServerValue.TIMESTAMP,updated:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
+  netJoinSelf(true);netWatch();
+  if(meeting)enterMeeting(); else enterLobby();
   return true;
+}
+async function createMeetingRoom(){
+  if(netAvailable()){ const ok=await netCreateRoom("meeting"); if(ok)return; toast("Couldn't reach Firebase"); return; }
+  toast("Meeting Room needs an internet connection");
 }
 async function netJoinRoom(code,pass){
   const uid=await netEnsureAuth(); if(!uid)return {ok:false,err:"Sign-in failed (enable Anonymous auth)"};
@@ -1720,17 +1783,20 @@ async function netJoinRoom(code,pass){
   if(!snap||!snap.exists())return {ok:false,err:"Room not found"};
   const meta=snap.val();
   if((meta.pass||"")!==(pass||""))return {ok:false,err:"Wrong password"};
+  const meeting=(meta.roomType==="meeting");
+  S.meeting=meeting;                       // set BEFORE netWatch
   NET.online=true;NET.isHost=(meta.host===uid);NET.base=netRef();NET.hostUid=meta.host;NET.metaPhase=meta.phase||"lobby";
   S.room.code=code;S.me.id=uid;
   if(meta.cat)S.cat=meta.cat;if(meta.roundTime)S.roundTime=meta.roundTime;if(meta.maxRounds)S.maxRounds=meta.maxRounds;
-  netJoinSelf(NET.isHost);netWatch();enterLobby();
+  netJoinSelf(NET.isHost);netWatch();
+  if(meeting)enterMeeting(); else enterLobby();
   return {ok:true};
 }
 function netUpdateRoomList(){
   if(!(NET.online&&NET.isHost)||!NET.code)return;
   const count=Object.keys(NET.playersMap||{}).length||S.players.length||1;
   const live=!!(S.roundActive||(S.roundNo>0&&!S.gameOver));
-  try{ firebase.database().ref("roomList/"+NET.code).update({code:NET.code,cat:S.cat,count,phase:live?"playing":"lobby",hasPass:!!(S.room.pass),host:NET.uid,updated:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
+  try{ firebase.database().ref("roomList/"+NET.code).update({code:NET.code,cat:S.cat,count,phase:S.meeting?"meeting":(live?"playing":"lobby"),roomType:S.meeting?"meeting":"game",hasPass:!!(S.room.pass),host:NET.uid,updated:firebase.database.ServerValue.TIMESTAMP}); }catch(e){}
 }
 function netJoinSelf(asHost){
   const me=netRef("players/"+NET.uid);
@@ -1750,7 +1816,12 @@ function netLeave(){
     netRef("players/"+NET.uid).remove(); netRef().off();
   }catch(e){}
   NET.online=false;NET.code=null;NET.base=null;NET.isHost=false;NET.lastRound=null;NET.playersMap={};
-  S.champWins={};S.pigHats={};   // crown/pig stats reset on leaving the room
+  S.champWins={};S.pigHats={};S.meeting=false;   // crown/pig stats + meeting flag reset on leaving the room
+}
+function leaveMeetingUI(){   // restore the #game chrome after a Meeting Room
+  S.meeting=false;
+  const g=$("#game");if(g)g.classList.remove("meeting");
+  const sl=$("#scoreList");if(sl){sl.className="scorelist";const h=sl.previousElementSibling;if(h)h.textContent="Score";}
 }
 /* tab close / refresh: remove self & hand off host right away (onDisconnect is the server-side safety net) */
 window.addEventListener("pagehide",()=>{
@@ -1772,7 +1843,7 @@ function netWatch(){
   netRef("players").on("value",s=>netApplyPlayers(s.val()||{}));
   netRef("meta").on("value",s=>netApplyMeta(s.val()||{}));
   netRef("game").on("value",s=>{ if(!NET.isHost)netApplyGame(s.val()); });
-  netRef("strokes").on("child_added",s=>netApplyStroke(s.val()));
+  if(!S.meeting)netRef("strokes").on("child_added",s=>netApplyStroke(s.val()));
   let chatPrimed=false;
   netRef("chat").on("value",()=>{chatPrimed=true;});                     // fires once after initial history load
   netRef("chat").on("child_added",s=>{ if(chatPrimed)netApplyChat(s.val()); });   // only live messages — never replay old answers
