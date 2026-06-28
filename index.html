@@ -207,11 +207,10 @@ h1,h2,h3{margin:0;font-weight:600}
 .create-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 /* meeting chat: bubbles, contained so it never spills onto the canvas */
 #game.meeting .guessbar{display:flex!important}
-#game.meeting .guessfeed{height:auto;flex:1 1 auto;min-height:84px;max-height:34vh;background:var(--surface-2)}
-#game.meeting .msg{background:#fff;border:1px solid var(--line);border-radius:13px;padding:5px 11px;align-self:flex-start;max-width:84%;box-shadow:0 1px 2px rgba(74,63,53,.08);word-break:break-word}
-#game.meeting .msg.me{align-self:flex-end;background:var(--accent-soft);border-color:var(--accent)}
-#game.meeting .msg .who{display:block;font-size:11px;opacity:.8;margin-bottom:1px}
-#game.meeting .msg.me .who{display:none}
+#game.meeting .guessfeed{height:184px;flex:0 0 184px;overflow-y:auto;background:var(--surface-2)}   /* fixed height — never grows while typing */
+#game.meeting .msg{align-self:stretch;max-width:100%;background:none;border:none;border-radius:0;box-shadow:none;padding:1px 2px;word-break:break-word;color:var(--ink)}   /* everyone left-aligned, others in black */
+#game.meeting .msg.me{color:var(--accent)}                 /* my own messages in orange */
+#game.meeting .msg .who{display:inline;font-weight:700;color:inherit!important}   /* always show the sender name, same colour as the line */
 .typing-ind{height:16px;padding:0 12px;font-size:12px;color:var(--ink-soft);font-style:italic;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pcell.sel{border:2.5px solid var(--ink);box-shadow:0 0 0 1.5px #fff inset}
 .pcell.sel{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset}
